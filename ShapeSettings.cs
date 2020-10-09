@@ -8,8 +8,7 @@ public class ShapeSettings : ScriptableObject {
     public NoiseLayer[] noiseLayers;
 
     [System.Serializable]
-    public class NoiseLayer
-    {
+    public class NoiseLayer {
         public bool enabled = true;
         public bool useFirstLayerAsMask;
         public LegacyNoiseSettings noiseSettings;

@@ -10,23 +10,21 @@ public class ColorSettings : ScriptableObject {
     public Gradient oceanColor;
 
     [System.Serializable]
-    public class BiomeColorSettings
-    {
+    public class BiomeColorSettings {
         public Biome[] biomes;
         public LegacyNoiseSettings noise;
         public float noiseOffset;
         public float noiseStrength;
-        [Range(0,1)]
+        [Range(0, 1)]
         public float blendAmount;
 
         [System.Serializable]
-        public class Biome
-        {
+        public class Biome {
             public Gradient gradient;
             public Color tint;
-            [Range(0,1)]
+            [Range(0, 1)]
             public float startHeight;
-            [Range(0,1)]
+            [Range(0, 1)]
             public float tintPercent;
         }
     }

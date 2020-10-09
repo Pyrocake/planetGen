@@ -31,8 +31,7 @@ Some changes by Sebastian Lague for use in a tutorial series.
 */
 
 using System;
-public class Noise
-{
+public class Noise {
     #region Values
     /// Initial permutation table
     static readonly int[] Source = {
@@ -84,13 +83,11 @@ public class Noise
     };
     #endregion
 
-    public Noise()
-    {
+    public Noise() {
         Randomize(0);
     }
 
-    public Noise(int seed)
-    {
+    public Noise(int seed) {
         Randomize(seed);
     }
 
@@ -98,8 +95,7 @@ public class Noise
     /// <summary>
     /// Generates value, typically in range [-1, 1]
     /// </summary>
-    public float Evaluate(UnityEngine.Vector3 point)
-    {
+    public float Evaluate(UnityEngine.Vector3 point) {
         double x = point.x;
         double y = point.y;
         double z = point.z;
@@ -129,10 +125,8 @@ public class Noise
         // coords
         int i2, j2, k2; // Offsets for third corner of simplex in (i,j,k) coords
 
-        if (x0 >= y0)
-        {
-            if (y0 >= z0)
-            {
+        if (x0 >= y0) {
+            if (y0 >= z0) {
                 // X Y Z order
                 i1 = 1;
                 j1 = 0;
@@ -140,9 +134,7 @@ public class Noise
                 i2 = 1;
                 j2 = 1;
                 k2 = 0;
-            }
-            else if (x0 >= z0)
-            {
+            } else if (x0 >= z0) {
                 // X Z Y order
                 i1 = 1;
                 j1 = 0;
@@ -150,9 +142,7 @@ public class Noise
                 i2 = 1;
                 j2 = 0;
                 k2 = 1;
-            }
-            else
-            {
+            } else {
                 // Z X Y order
                 i1 = 0;
                 j1 = 0;
@@ -161,12 +151,9 @@ public class Noise
                 j2 = 0;
                 k2 = 1;
             }
-        }
-        else
-        {
+        } else {
             // x0 < y0
-            if (y0 < z0)
-            {
+            if (y0 < z0) {
                 // Z Y X order
                 i1 = 0;
                 j1 = 0;
@@ -174,9 +161,7 @@ public class Noise
                 i2 = 0;
                 j2 = 1;
                 k2 = 1;
-            }
-            else if (x0 < z0)
-            {
+            } else if (x0 < z0) {
                 // Y Z X order
                 i1 = 0;
                 j1 = 1;
@@ -184,9 +169,7 @@ public class Noise
                 i2 = 0;
                 j2 = 1;
                 k2 = 1;
-            }
-            else
-            {
+            } else {
                 // Y X Z order
                 i1 = 0;
                 j1 = 1;
@@ -225,32 +208,28 @@ public class Noise
 
         // Calculate the contribution from the four corners
         double t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0;
-        if (t0 > 0)
-        {
+        if (t0 > 0) {
             t0 *= t0;
             int gi0 = _random[ii + _random[jj + _random[kk]]] % 12;
             n0 = t0 * t0 * Dot(Grad3[gi0], x0, y0, z0);
         }
 
         double t1 = 0.6 - x1 * x1 - y1 * y1 - z1 * z1;
-        if (t1 > 0)
-        {
+        if (t1 > 0) {
             t1 *= t1;
             int gi1 = _random[ii + i1 + _random[jj + j1 + _random[kk + k1]]] % 12;
             n1 = t1 * t1 * Dot(Grad3[gi1], x1, y1, z1);
         }
 
         double t2 = 0.6 - x2 * x2 - y2 * y2 - z2 * z2;
-        if (t2 > 0)
-        {
+        if (t2 > 0) {
             t2 *= t2;
             int gi2 = _random[ii + i2 + _random[jj + j2 + _random[kk + k2]]] % 12;
             n2 = t2 * t2 * Dot(Grad3[gi2], x2, y2, z2);
         }
 
         double t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3;
-        if (t3 > 0)
-        {
+        if (t3 > 0) {
             t3 *= t3;
             int gi3 = _random[ii + 1 + _random[jj + 1 + _random[kk + 1]]] % 12;
             n3 = t3 * t3 * Dot(Grad3[gi3], x3, y3, z3);
@@ -262,20 +241,17 @@ public class Noise
     }
 
 
-    void Randomize(int seed)
-    {
+    void Randomize(int seed) {
         _random = new int[RandomSize * 2];
 
-        if (seed != 0)
-        {
+        if (seed != 0) {
             // Shuffle the array using the given seed
             // Unpack the seed into 4 bytes then perform a bitwise XOR operation
             // with each byte
             var F = new byte[4];
             UnpackLittleUint32(seed, ref F);
 
-            for (int i = 0; i < Source.Length; i++)
-            {
+            for (int i = 0; i < Source.Length; i++) {
                 _random[i] = Source[i] ^ F[0];
                 _random[i] ^= F[1];
                 _random[i] ^= F[2];
@@ -284,31 +260,25 @@ public class Noise
                 _random[i + RandomSize] = _random[i];
             }
 
-        }
-        else
-        {
+        } else {
             for (int i = 0; i < RandomSize; i++)
                 _random[i + RandomSize] = _random[i] = Source[i];
         }
     }
 
-    static double Dot(int[] g, double x, double y, double z, double t)
-    {
+    static double Dot(int[] g, double x, double y, double z, double t) {
         return g[0] * x + g[1] * y + g[2] * z + g[3] * t;
     }
 
-    static double Dot(int[] g, double x, double y, double z)
-    {
+    static double Dot(int[] g, double x, double y, double z) {
         return g[0] * x + g[1] * y + g[2] * z;
     }
 
-    static double Dot(int[] g, double x, double y)
-    {
+    static double Dot(int[] g, double x, double y) {
         return g[0] * x + g[1] * y;
     }
 
-    static int FastFloor(double x)
-    {
+    static int FastFloor(double x) {
         return x >= 0 ? (int)x : (int)x - 1;
     }
 
@@ -318,8 +288,7 @@ public class Noise
     /// </summary>
     /// <param name="value">The value.</param>
     /// <param name="buffer">The output buffer.</param>
-    static byte[] UnpackLittleUint32(int value, ref byte[] buffer)
-    {
+    static byte[] UnpackLittleUint32(int value, ref byte[] buffer) {
         if (buffer.Length < 4)
             Array.Resize(ref buffer, 4);
 

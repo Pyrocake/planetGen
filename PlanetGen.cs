@@ -62,8 +62,7 @@ public class PlanetGen : MonoBehaviour {
         GenerateMesh();
         timer.Stop();
         Debug.Log("Initialized. Time elapsed: " + timer.ElapsedMilliseconds + " ms");
-        if (!killUpdates)
-        {
+        if (!killUpdates) {
             StartCoroutine(PlanetGenerationLoop());
         }
     }
@@ -91,8 +90,8 @@ public class PlanetGen : MonoBehaviour {
         if (meshFilters == null || meshFilters.Length == 0) {
             meshFilters = new MeshFilter[6];
         }
-        
-            //gameObject.AddComponent<NoiseFilter>();
+
+        //gameObject.AddComponent<NoiseFilter>();
 
         terrainInstances = new TerrainInstance[6];
 
@@ -123,7 +122,7 @@ public class PlanetGen : MonoBehaviour {
             Vector3 scaleOcean = new Vector3(scalerOcean, scalerOcean, scalerOcean);
             ocean.transform.localScale = scaleOcean;
         }
-        
+
 
     }
 
@@ -135,13 +134,12 @@ public class PlanetGen : MonoBehaviour {
         float oldMin = mainBuilder.elevationMinMax.Min;
         for (int i = 0; i < points.Length; i++) {
             if (points[i] != null) {
-                uv[i].x = mainBuilder.BiomePoint(points[i].normalized,this);
-                float newVal = ((points[i].magnitude - oldMin)/ oldRange);
+                uv[i].x = mainBuilder.BiomePoint(points[i].normalized, this);
+                float newVal = ((points[i].magnitude - oldMin) / oldRange);
 
                 uv[i].y = newVal;
 
-                if (uv[i].y < 0|| uv[i].y > 1)
-                {
+                if (uv[i].y < 0 || uv[i].y > 1) {
                     Debug.Log("This Y is being funky, don't like it: " + uv[i].y);
                 }
             } else {
@@ -156,18 +154,17 @@ public class PlanetGen : MonoBehaviour {
     void GenerateMesh() {
         foreach (TerrainInstance face in terrainInstances) {
             face.BuildTileTree();
-            
+
         }
         if (lagSwitch) {
             mainBuilder.UpdateElevation();
             mainBuilder.UpdateColors();
         }
-       
-        
+
+
     }
 
-    void UpdateMesh()
-    {
+    void UpdateMesh() {
         foreach (TerrainInstance face in terrainInstances) {
             face.UpdateTree();
             //face.mesh.uv = UpdateUV(face.mesh);
@@ -185,10 +182,8 @@ public class PlanetGen : MonoBehaviour {
     }
 
     public void OnBiomeSettingsUpdated() {
-        if (Application.isPlaying)
-        {
-            foreach (TerrainInstance face in terrainInstances)
-            {
+        if (Application.isPlaying) {
+            foreach (TerrainInstance face in terrainInstances) {
                 UpdateUV(face.mesh);
             }
             mainBuilder.UpdateElevation();

@@ -1,7 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System;
 
 public class Presets : MonoBehaviour {
     public static int quadRes = 24; // The resolution of the quads

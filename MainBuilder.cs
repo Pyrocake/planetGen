@@ -20,7 +20,7 @@ public class MainBuilder {
         settings = biomeBuilder;
         surfaceMat = biomeBuilder.material;
         planetGen = planet;
-        
+
         if (texture == null || texture.height != settings.biomeColorSettings.biomes.Length) {
             Debug.Log("Texture initialization beginning");
             texture = new Texture2D(textureResolution * 2, settings.biomeColorSettings.biomes.Length, TextureFormat.RGBA32, false);
@@ -29,7 +29,7 @@ public class MainBuilder {
         biomeNoiseFilter = NoiseFactory.CreateNoiseFilter(settings.biomeColorSettings.legacyNoiseSettings);
 
         elevationMinMax = new MinMax();
-        
+
     }
 
     public void CalculateElevation(Vector3 pointOnUnit) {
@@ -42,8 +42,7 @@ public class MainBuilder {
         if (surfaceMat == null) {
             Debug.LogWarning("This should not be possible. Critical Error in Material collection");
         }
-        if (Application.isPlaying)
-        {
+        if (Application.isPlaying) {
             surfaceMat.SetVector("_elevationMinMax", new Vector4(elevationMinMax.Min, elevationMinMax.Max));
         }
         //Debug.Log(elevation.Min);
@@ -53,7 +52,7 @@ public class MainBuilder {
         float heightPercent = (pointOnUnit.y + 1) / 2f;
         //Debug.Log(heightPercent);
         heightPercent += (biomeNoiseFilter.Evaluate(pointOnUnit) - planetGen.biomeBuilder.biomeColorSettings.noiseOffset) * planetGen.biomeBuilder.biomeColorSettings.noiseStrength;
-        
+
         float biomeIndex = 0;
         int numBiomes = planetGen.biomeBuilder.biomeColorSettings.biomes.Length;
         //Debug.Log(numBiomes);
@@ -93,5 +92,5 @@ public class MainBuilder {
         surfaceMat.SetTexture("_texture", texture);
         surfaceMat.SetFloat("_seaLevel", settings.oceanSettings.seaLevel);
     }
-        
+
 }

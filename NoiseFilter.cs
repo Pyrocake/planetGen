@@ -25,7 +25,7 @@ public class NoiseFilter : MonoBehaviour {
     /// <param name="point"></param>
     /// <param name="seaLevel"></param>
     /// <returns>The noise value at point, cubed, times strength</returns>
-    public float Evaluate(Vector3 point,float seaLevel) {
+    public float Evaluate(Vector3 point, float seaLevel) {
         float noiseValue = 0;
         float frequency = baseRoughness;
         float amplitude = 1;

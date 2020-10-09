@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public class LegacyNoiseSettings{
+public class LegacyNoiseSettings {
 
-    public enum FilterType {Legacy, Rigid};
+    public enum FilterType { Legacy, Rigid };
     public FilterType filterType;
 
     [ConditionalHide("filterType", 0)]
@@ -24,7 +24,7 @@ public class LegacyNoiseSettings{
         public Vector3 center;
         public float minValue;
     }
-    
+
     [System.Serializable]
     public class RigidNoiseSettings : LegacySimpleNoiseSettings {
         public float weightMultiplier = .8f;

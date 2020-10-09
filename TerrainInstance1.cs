@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class TerrainInstance1{
+public class TerrainInstance1 {
 
     ShapeGenerator shapeGenerator;
     Mesh mesh;
@@ -13,8 +13,7 @@ public class TerrainInstance1{
     Vector3 axisA;
     Vector3 axisB;
 
-    public TerrainInstance1(ShapeGenerator shapeGenerator, Mesh mesh, int resolution, Vector3 localUP, int breakFactor, int iteration)
-    {
+    public TerrainInstance1(ShapeGenerator shapeGenerator, Mesh mesh, int resolution, Vector3 localUP, int breakFactor, int iteration) {
         this.shapeGenerator = shapeGenerator;
         this.mesh = mesh;
         this.resolution = resolution;
@@ -26,40 +25,37 @@ public class TerrainInstance1{
         axisB = Vector3.Cross(localUP, axisA);
     }
 
-    public void ConstructMesh()
-    {
+    public void ConstructMesh() {
         Vector3[] vertices = new Vector3[resolution * resolution];
         int[] triangles = new int[(resolution - 1) * (resolution - 1) * 6];
         int triangleIndex = 0;
         Vector3[] normals = new Vector3[resolution * resolution];
-        Vector2[] uv = (mesh.uv.Length == vertices.Length)?mesh.uv:new Vector2[vertices.Length];
+        Vector2[] uv = (mesh.uv.Length == vertices.Length) ? mesh.uv : new Vector2[vertices.Length];
 
-        for (int y = 0; y < resolution; y++)
-        {
-            for (int x = 0; x < resolution; x++)
-            {
+        for (int y = 0; y < resolution; y++) {
+            for (int x = 0; x < resolution; x++) {
                 int i = x + y * resolution;
 
                 int column = iteration / breakFactor;
                 int row = iteration % breakFactor;
 
                 Vector2 percent = new Vector2(x, y) / (resolution - 1);
-                float scaler = 2 * (1/(float)breakFactor);
-                Vector3 pointOnUnit = localUP + (percent.x-.5f) * scaler * axisA + (percent.y - .5f) * scaler * axisB + (axisA * (column - ((float).5) * (breakFactor-1)) * scaler) + (axisB * (row - ((float).5) * (breakFactor - 1)) * scaler);
+                float scaler = 2 * (1 / (float)breakFactor);
+                Vector3 pointOnUnit = localUP + (percent.x - .5f) * scaler * axisA + (percent.y - .5f) * scaler * axisB + (axisA * (column - ((float).5) * (breakFactor - 1)) * scaler) + (axisB * (row - ((float).5) * (breakFactor - 1)) * scaler);
                 Vector3 pointOnUnitSphere = pointOnUnit.normalized;
                 float unscaledElevation = shapeGenerator.CalculateUnscaledElevation(pointOnUnitSphere);
                 //vertices[i] = pointOnUnitSphere * shapeGenerator.GetScaledElevation(unscaledElevation);
                 uv[i].y = unscaledElevation;
 
-                if (x!=resolution-1 && y!=resolution-1){
-                        triangles[triangleIndex] = i;
-                        triangles[triangleIndex + 1] = i + resolution + 1;
-                        triangles[triangleIndex + 2] = i + resolution;
+                if (x != resolution - 1 && y != resolution - 1) {
+                    triangles[triangleIndex] = i;
+                    triangles[triangleIndex + 1] = i + resolution + 1;
+                    triangles[triangleIndex + 2] = i + resolution;
 
-                        triangles[triangleIndex + 3] = i;
-                        triangles[triangleIndex + 4] = i + 1;
-                        triangles[triangleIndex + 5] = i + resolution + 1;
-                        triangleIndex += 6;
+                    triangles[triangleIndex + 3] = i;
+                    triangles[triangleIndex + 4] = i + 1;
+                    triangles[triangleIndex + 5] = i + resolution + 1;
+                    triangleIndex += 6;
                 }
                 normals[i] = vertices[i].normalized;
             }
@@ -73,13 +69,10 @@ public class TerrainInstance1{
         //mesh.RecalculateNormals();
     }
 
-    public void UpdateUVs(ColorGenerator colorGenerator)
-    {
+    public void UpdateUVs(ColorGenerator colorGenerator) {
         Vector2[] uv = mesh.uv;
-        for (int y = 0; y < resolution; y++)
-        {
-            for (int x = 0; x < resolution; x++)
-            {
+        for (int y = 0; y < resolution; y++) {
+            for (int x = 0; x < resolution; x++) {
                 int column = iteration / breakFactor;
                 int row = iteration % breakFactor;
                 float scaler = 2 * (1 / (float)breakFactor);

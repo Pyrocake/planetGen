@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Collections;
-using UnityEngine;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Threading;
+using UnityEngine;
 
 public class TerrainInstance {
 
@@ -72,7 +72,7 @@ public class TerrainInstance {
         mesh.vertices = vertices.ToArray();
         mesh.triangles = triangles.ToArray();
         mesh.normals = normals.ToArray();
-       // mesh.uv = uv;
+        // mesh.uv = uv;
         planetGen.UpdateUV(mesh);
     }
 
@@ -465,6 +465,6 @@ public class Tile {
         return Vector3.Cross(sideAB, sideAC).normalized;
     }
 
-    
+
 
 }
