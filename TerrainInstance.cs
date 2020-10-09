@@ -26,8 +26,6 @@ public class TerrainInstance {
     public MinMax elevationMinMax;
 
     ShapeGenerator shapeGenerator;
-    int breakFactor;
-    int resolution;
 
     public TerrainInstance(Mesh mesh, Vector3 localUP, float radius, PlanetGen planetGen, MainBuilder mainBuilder) {
         this.mesh = mesh;

@@ -46,10 +46,8 @@ public class PlanetGen : MonoBehaviour {
     [HideInInspector]
     public float distanceToPlayerAdjusted;
 
-
     public BiomeBuilder biomeBuilder;
 
-    //ShapeGenerator shapeGenerator = new ShapeGenerator();
     MainBuilder mainBuilder = new MainBuilder();
 
     private void Awake() {
@@ -60,7 +58,6 @@ public class PlanetGen : MonoBehaviour {
     private void Start() {
         timer = new Stopwatch();
         timer.Start();
-        //Will clear shader on Start if this isn't here
         Initialize();
         GenerateMesh();
         timer.Stop();
