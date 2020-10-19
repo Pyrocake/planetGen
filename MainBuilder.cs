@@ -45,17 +45,14 @@ public class MainBuilder {
         if (Application.isPlaying) {
             surfaceMat.SetVector("_elevationMinMax", new Vector4(elevationMinMax.Min, elevationMinMax.Max));
         }
-        //Debug.Log(elevation.Min);
     }
 
     public float BiomePoint(Vector3 pointOnUnit, PlanetGen planetGen) {
         float heightPercent = (pointOnUnit.y + 1) / 2f;
-        //Debug.Log(heightPercent);
         heightPercent += (biomeNoiseFilter.Evaluate(pointOnUnit) - planetGen.biomeBuilder.biomeColorSettings.noiseOffset) * planetGen.biomeBuilder.biomeColorSettings.noiseStrength;
 
         float biomeIndex = 0;
         int numBiomes = planetGen.biomeBuilder.biomeColorSettings.biomes.Length;
-        //Debug.Log(numBiomes);
         float blendRange = planetGen.biomeBuilder.biomeColorSettings.blendAmount / 2f + .001f;
 
         for (int i = 0; i < numBiomes; i++) {
@@ -64,7 +61,6 @@ public class MainBuilder {
             biomeIndex *= (1 - weight);
             biomeIndex += i * weight;
         }
-        //Debug.Log("Biome Index: " + (biomeIndex / Mathf.Max(1, numBiomes - 1)) + ", Vector Input Y: " + pointOnUnit.y);
         return biomeIndex / Mathf.Max(1, numBiomes - 1);
     }
 
@@ -84,6 +80,9 @@ public class MainBuilder {
                 }
                 Color tintCol = biome.tint;
                 colors[colorIndex] = gradientCol * (1 - biome.tintPercent) + tintCol * biome.tintPercent;
+                if (settings.biomeColorSettings.tintToggle) {
+                    colors[colorIndex] = gradientCol * (0) + tintCol * 1;
+                }
                 colorIndex++;
             }
         }

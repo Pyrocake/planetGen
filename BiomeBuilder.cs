@@ -11,6 +11,7 @@ public class BiomeBuilder : ScriptableObject {
 
     [System.Serializable]
     public class BiomeColorSettings {
+        public bool tintToggle = false;
         public Biome[] biomes;
         //public Noise noise;
         public float noiseOffset;
