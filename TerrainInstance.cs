@@ -361,7 +361,7 @@ public class Tile {
         for (int i = 0; i < vertices.Length; i++) {
             Vector3 pointOnCube = transformMatrix.MultiplyPoint(Presets.quadTemplateVertices[quadIndex][i]);
             Vector3 pointOnUnitSphere = pointOnCube.normalized;
-            float elevation = planetGen.noiseFilter.Evaluate(pointOnUnitSphere, 1);
+            float elevation = planetGen.shapeBuilder.Evaluate(pointOnUnitSphere, 1);
             vertices[i] = pointOnUnitSphere * (1 + elevation) * planetGen.size;
             mainBuilder.CalculateElevation(pointOnUnitSphere);
         }
@@ -372,7 +372,7 @@ public class Tile {
         for (int i = 0; i < borderVertices.Length; i++) {
             Vector3 pointOnCube = transformMatrix.MultiplyPoint(Presets.quadTemplateBorderVertices[quadIndex][i]);
             Vector3 pointOnUnitSphere = pointOnCube.normalized;
-            float elevation = planetGen.noiseFilter.Evaluate(pointOnUnitSphere, 1);
+            float elevation = planetGen.shapeBuilder.Evaluate(pointOnUnitSphere, 1);
             borderVertices[i] = pointOnUnitSphere * (1 + elevation) * planetGen.size;
             mainBuilder.CalculateElevation(pointOnUnitSphere);
         }

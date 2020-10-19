@@ -33,7 +33,7 @@ public class MainBuilder {
     }
 
     public void CalculateElevation(Vector3 pointOnUnit) {
-        float elevation = planetGen.noiseFilter.Evaluate(pointOnUnit, 1);
+        float elevation = planetGen.shapeBuilder.Evaluate(pointOnUnit, 1);
         Vector3 elevate = pointOnUnit * (1 + elevation) * planetGen.size;
         elevationMinMax.AddValue(elevate.magnitude);
     }

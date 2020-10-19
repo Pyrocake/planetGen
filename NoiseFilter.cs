@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // A lot of this code comes from Sebastian Lague, credit goes to him
-public class NoiseFilter : MonoBehaviour {
+[CreateAssetMenu]
+public class NoiseFilter : ScriptableObject {
     Noise noise = new Noise();
 
     public float strength = 1;
@@ -12,6 +13,7 @@ public class NoiseFilter : MonoBehaviour {
     public float roughness = 2;
     public float persistance = .5f;
     //This Factor is currently unutilized
+    [Tooltip("Unused")]
     [Range(0,1)] public float mysteryFactor = 1;
     public Vector3 center;
 

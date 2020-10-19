@@ -35,8 +35,6 @@ public class PlanetGen : MonoBehaviour {
 
     public Material surfaceMat;
 
-    public NoiseFilter noiseFilter;
-
     [Header("Miscellaneous")]
     public bool spawnFakeOcean = true;
 
@@ -48,6 +46,7 @@ public class PlanetGen : MonoBehaviour {
     public float distanceToPlayerAdjusted;
 
     public BiomeBuilder biomeBuilder;
+    public NoiseFilter shapeBuilder;
 
     MainBuilder mainBuilder = new MainBuilder();
 
@@ -193,6 +192,8 @@ public class PlanetGen : MonoBehaviour {
         }
     }
     public void OnShapeSettingsUpdated() {
-
+        if (Application.isPlaying) {
+            this.Start();
+        }
     }
 }
