@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//DEPRECATED
 public class ShapeGenerator {
 
     ShapeSettings settings;

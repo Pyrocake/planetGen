@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//DEPRECATED
+
 [CreateAssetMenu()]
 public class ShapeSettings : ScriptableObject {
 
