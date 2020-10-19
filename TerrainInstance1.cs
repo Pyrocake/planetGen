@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-
+//DEPRECATED
 public class TerrainInstance1 {
 
     ShapeGenerator shapeGenerator;
