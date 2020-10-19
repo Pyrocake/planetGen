@@ -11,6 +11,8 @@ public class NoiseFilter : MonoBehaviour {
     public float baseRoughness = 1;
     public float roughness = 2;
     public float persistance = .5f;
+    //This Factor is currently unutilized
+    [Range(0,1)] public float mysteryFactor = 1;
     public Vector3 center;
 
     //public Texture2D[] heightMap;
@@ -53,7 +55,7 @@ public class NoiseFilter : MonoBehaviour {
         }
         //This may be useless, we'll see
         //original line: float elevation = 1 - Mathf.Abs(noiseValue);
-        float elevation = 1 - (Mathf.Abs(noiseValue) + Mathf.Abs(0.3f * noiseEaser * (1 - Mathf.Abs(noiseValue)))) - 0.0001f;
+        float elevation = 1 - (Mathf.Abs(noiseValue) + Mathf.Abs(0.3f * Mathf.Abs(noiseEaser) * (1 - Mathf.Abs(noiseValue)))) - 0.0001f;
         elevation = Mathf.Clamp01(elevation);
 
         return elevation * elevation * elevation * strength;
