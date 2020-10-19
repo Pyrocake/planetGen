@@ -30,6 +30,7 @@ public class PlanetGen : MonoBehaviour {
         210f,
         100f,
         40f,
+        20f,
     };
 
     public Material surfaceMat;
@@ -76,9 +77,10 @@ public class PlanetGen : MonoBehaviour {
         while (true) {
             yield return new WaitForSeconds(0.5f);
             if (transform.hasChanged) {
-                UpdateMesh();
+                
                 transform.hasChanged = false;
             }
+            UpdateMesh();
             //mainBuilder.UpdateColors();
         }
     }

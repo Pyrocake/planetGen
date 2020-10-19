@@ -27,14 +27,18 @@ public class NoiseFilter : MonoBehaviour {
     /// <returns>The noise value at point, cubed, times strength</returns>
     public float Evaluate(Vector3 point, float seaLevel) {
         float noiseValue = 0;
+        float noiseEaser = 0;
         float frequency = baseRoughness;
         float amplitude = 1;
+        Vector3 centerOff = new Vector3(center.x + 0.1f, center.y + 0.1f, center.z + 0.1f);
 
         if (seaLevel != 0) {
 
             for (int i = 0; i < octaves; i++) {
                 float v = noise.Evaluate(point * frequency + center);
+                float changer = noise.Evaluate(point * frequency + centerOff);
                 noiseValue += v * amplitude;
+                noiseEaser += changer * amplitude;
                 frequency *= roughness;
                 amplitude *= persistance;
             }
@@ -47,7 +51,10 @@ public class NoiseFilter : MonoBehaviour {
             }
             return 1 - Mathf.Abs(noiseValue);
         }
-        float elevation = 1 - Mathf.Abs(noiseValue);
+        //This may be useless, we'll see
+        //original line: float elevation = 1 - Mathf.Abs(noiseValue);
+        float elevation = 1 - (Mathf.Abs(noiseValue) + Mathf.Abs(0.3f * noiseEaser * (1 - Mathf.Abs(noiseValue)))) - 0.0001f;
+        elevation = Mathf.Clamp01(elevation);
 
         return elevation * elevation * elevation * strength;
     }
