@@ -7,6 +7,8 @@ using UnityEngine;
 public class NoiseFilter : ScriptableObject {
     Noise noise = new Noise();
 
+    public PlateSettings plateSettings;
+
     public float strength = 1;
     [Range(1, 8)] public int octaves = 1;
     public float baseRoughness = 1;
@@ -17,11 +19,17 @@ public class NoiseFilter : ScriptableObject {
     [Range(0,1)] public float mysteryFactor = 1;
     public Vector3 center;
 
-    //public Texture2D[] heightMap;
-    //public Texture2D[] normalMap;
-
     public PlanetGen planetScript;
     public MainBuilder mainBuilder;
+
+    [System.Serializable]
+    public class PlateSettings {
+        public float majorPlateCount = 10;
+        public float minorPlateCount = 15;
+        public float microPlateCount = 30;
+    }
+
+
 
     /// <summary>
     /// This only finds base elevation properly if you supply seaLevel as != 0, seaLevel is not currently implemented

@@ -6,11 +6,20 @@ using UnityEngine;
 public class BiomeBuilder : ScriptableObject {
 
     public Material material;
+    public enum ViewMode {
+        Default,
+        Plates,
+        Watershed,
+        Rain
+    }
+    public ViewMode viewMode;
+
     public BiomeColorSettings biomeColorSettings;
     public OceanSettings oceanSettings;
 
     [System.Serializable]
     public class BiomeColorSettings {
+        
         public bool tintToggle = false;
         public Biome[] biomes;
         //public Noise noise;
@@ -30,6 +39,7 @@ public class BiomeBuilder : ScriptableObject {
             public float tintPercent;
         }
     }
+
     [System.Serializable]
     public class OceanSettings {
         public Gradient oceanColor;

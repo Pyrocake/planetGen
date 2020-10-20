@@ -62,8 +62,13 @@ public class PlanetGen : MonoBehaviour {
         GenerateMesh();
         timer.Stop();
         Debug.Log("Initialized. Time elapsed: " + timer.ElapsedMilliseconds + " ms");
-        if (!killUpdates) {
-            StartCoroutine(PlanetGenerationLoop());
+        StopAllCoroutines();
+        StartCoroutine(PlanetGenerationLoop());
+        if (meshFilters[0].gameObject.GetComponent<MeshCollider>() == null) {
+            for (int i = 0; i < 6; i++) {
+                meshFilters[i].gameObject.AddComponent<MeshCollider>();
+                meshFilters[i].gameObject.layer = 10;
+            }
         }
     }
 
@@ -119,7 +124,7 @@ public class PlanetGen : MonoBehaviour {
         if (spawnFakeOcean) {
             GameObject ocean = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             ocean.transform.parent = gameObject.transform;
-            int scalerOcean = ((int)size * 2) + 25;
+            int scalerOcean = ((int)size * 2) + 3;
             Vector3 scaleOcean = new Vector3(scalerOcean, scalerOcean, scalerOcean);
             ocean.transform.localScale = scaleOcean;
         }
