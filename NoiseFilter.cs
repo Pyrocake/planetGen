@@ -66,7 +66,7 @@ public class NoiseFilter : ScriptableObject {
         //This may be useless, we'll see
         //original line: float elevation = 1 - Mathf.Abs(noiseValue);
         float elevation = 1 - (Mathf.Abs(noiseValue) + Mathf.Abs(0.3f * Mathf.Abs(noiseEaser) * (1 - Mathf.Abs(noiseValue)))) - 0.0001f;
-        elevation = Mathf.Clamp01(elevation);
+        //elevation = Mathf.Clamp01(elevation);
 
         return elevation * elevation * elevation * strength;
     }

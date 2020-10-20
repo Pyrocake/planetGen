@@ -18,19 +18,19 @@ public class PlanetGen : MonoBehaviour {
 
     [HideInInspector]
     public float cullingMinAngle = 1.45f;
-    [HideInInspector]
-    public float size = 1000;
+
+    public float size = 2000;
+    float sizeModi = 2;
 
     [HideInInspector]
     public float[] detailLevelDistances = new float[] {
         Mathf.Infinity,
-        3000f,
-        1100f,
-        500f,
-        210f,
-        100f,
-        40f,
-        20f,
+        3000f * 2,
+        1100f * 2,
+        500f * 2,
+        210f * 2,
+        100f * 2,
+        40f * 2,
     };
 
     public Material surfaceMat;
@@ -50,11 +50,12 @@ public class PlanetGen : MonoBehaviour {
 
     MainBuilder mainBuilder = new MainBuilder();
 
+    bool unFixed = true;
+
     private void Awake() {
         player = GameObject.FindGameObjectWithTag("Player").transform;
         distanceToPlayer = Vector3.Distance(transform.position, player.position);
     }
-
     private void Start() {
         timer = new Stopwatch();
         timer.Start();
@@ -64,17 +65,25 @@ public class PlanetGen : MonoBehaviour {
         Debug.Log("Initialized. Time elapsed: " + timer.ElapsedMilliseconds + " ms");
         StopAllCoroutines();
         StartCoroutine(PlanetGenerationLoop());
-        if (meshFilters[0].gameObject.GetComponent<MeshCollider>() == null) {
-            for (int i = 0; i < 6; i++) {
-                meshFilters[i].gameObject.AddComponent<MeshCollider>();
-                meshFilters[i].gameObject.layer = 10;
-            }
-        }
+        //Hopefully this is the problem
+        StartCoroutine(stupidFix());
     }
 
     private void Update() {
         distanceToPlayer = Vector3.Distance(transform.position, player.position);
         distanceToPlayerAdjusted = distanceToPlayer * distanceToPlayer;
+    }
+
+    private IEnumerator stupidFix() {
+        while (unFixed) {
+            yield return new WaitForSeconds(1f);
+            player.gameObject.GetComponent<Rigidbody>().MovePosition(transform.forward * -100f);
+            Debug.Log("Moved.");
+            player.gameObject.GetComponent<Rigidbody>().MovePosition(transform.forward * 100f);
+            unFixed = false;
+        }
+        Debug.Log("This routine is supposed to terminate");
+        StopCoroutine(stupidFix());
     }
 
     private IEnumerator PlanetGenerationLoop() {
@@ -129,7 +138,15 @@ public class PlanetGen : MonoBehaviour {
             ocean.transform.localScale = scaleOcean;
         }
 
-
+        for (int i = 0; i < 6; i++) {
+            GameObject meshOb = meshFilters[i].gameObject;
+            if (meshOb.GetComponent<MeshCollider>() == null) {
+                meshOb.AddComponent<MeshCollider>();
+            }
+            meshOb.GetComponent<MeshCollider>().sharedMesh = null;
+            meshOb.GetComponent<MeshCollider>().sharedMesh = terrainInstances[i].mesh;
+            meshOb.layer = 10;
+        }
     }
 
     public void UpdateUV(Mesh mesh) {
