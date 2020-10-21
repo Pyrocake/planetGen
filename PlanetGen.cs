@@ -6,8 +6,6 @@ using Debug = UnityEngine.Debug;
 
 public class PlanetGen : MonoBehaviour {
 
-    public Stopwatch timer;
-
     [SerializeField, HideInInspector]
     MeshFilter[] meshFilters;
     TerrainInstance[] terrainInstances;
@@ -21,12 +19,12 @@ public class PlanetGen : MonoBehaviour {
     public float cullingMinAngle = 1.45f;
 
     public float size = 2000;
-    float sizeModi = 2;
 
-    [HideInInspector]
+    //[HideInInspector]
     public float[] detailLevelDistances = new float[] {
         Mathf.Infinity,
         3000f,
+        2000f,
         1100f,
         500f,
         210f,
@@ -58,16 +56,11 @@ public class PlanetGen : MonoBehaviour {
         distanceToPlayer = Vector3.Distance(transform.position, player.position);
     }
     private void Start() {
-        timer = new Stopwatch();
-        timer.Start();
-        sizeModi = size / 1000;
         Initialize();
         GenerateMesh();
-        timer.Stop();
-        Debug.Log("Initialized. Time elapsed: " + timer.ElapsedMilliseconds + " ms");
         StopAllCoroutines();
         StartCoroutine(PlanetGenerationLoop());
-        //Hopefully this is the problem
+
         StartCoroutine(stupidFix());
     }
 
@@ -94,7 +87,6 @@ public class PlanetGen : MonoBehaviour {
                 transform.hasChanged = false;
             }
             UpdateMesh();
-            //mainBuilder.UpdateColors();
         }
     }
 
@@ -105,8 +97,6 @@ public class PlanetGen : MonoBehaviour {
         if (meshFilters == null || meshFilters.Length == 0) {
             meshFilters = new MeshFilter[6];
         }
-
-        //gameObject.AddComponent<NoiseFilter>();
 
         terrainInstances = new TerrainInstance[6];
 
@@ -195,15 +185,12 @@ public class PlanetGen : MonoBehaviour {
     void UpdateMesh() {
         foreach (TerrainInstance face in terrainInstances) {
             face.UpdateTree();
-            //face.mesh.uv = UpdateUV(face.mesh);
         }
 
         if (lagSwitch) {
             mainBuilder.UpdateElevation();
         }
-        //mainBuilder.UpdateColors(surfaceMat);
         UpdateCollider();
-        Debug.Log("Collider Updated");
     }
 
     void GenerateColors() {

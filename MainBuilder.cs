@@ -25,7 +25,6 @@ public class MainBuilder {
             Debug.Log("Texture initialization beginning");
             texture = new Texture2D(textureResolution * 2, settings.biomeColorSettings.biomes.Length, TextureFormat.RGBA32, false);
         }
-        //noiseFilter = new NoiseFilter();
         biomeNoiseFilter = NoiseFactory.CreateNoiseFilter(settings.biomeColorSettings.legacyNoiseSettings);
 
         elevationMinMax = new MinMax();

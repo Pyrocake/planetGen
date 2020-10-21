@@ -14,9 +14,10 @@ public class NoiseFilter : ScriptableObject {
     public float baseRoughness = 1;
     public float roughness = 2;
     public float persistance = .5f;
-    //This Factor is currently unutilized
-    [Tooltip("Unused")]
-    [Range(0f,.5f)] public float mysteryFactor = .25f;
+    [Range(0f,.75f)] public float altitudeCrusher = .35f;
+    [Range(2,16)] public int driftFactor = 4;
+    [Header("WARNING: Higher values will compound")]
+    [Range(0.01f, .2f)] public float driftOffset = .1f;
     public Vector3 center;
 
     public PlanetGen planetScript;
@@ -42,20 +43,20 @@ public class NoiseFilter : ScriptableObject {
         float noiseDrift = 0;
         float frequency = baseRoughness;
         float amplitude = 1;
-        float centerChange = .01f;
+        float centerChange = driftOffset;
         Vector3 centerOff = new Vector3(center.x + centerChange, center.y + centerChange, center.z + centerChange);
 
         if (seaLevel != 0) {
 
             for (int i = 0; i < octaves; i++) {
                 float v = noise.Evaluate(point * frequency + center);
-                float drift = noise.Evaluate(point * (frequency/4f) + centerOff);
+                float drift = noise.Evaluate(point * (frequency/ driftFactor) + centerOff);
                 noiseValue += v * amplitude;
                 noiseDrift += drift * amplitude;
                 frequency *= roughness;
                 amplitude *= persistance;
 
-                centerChange += .01f;
+                centerChange += driftOffset;
                 centerOff = new Vector3(center.x + centerChange, center.y + centerChange, center.z + centerChange);
             }
         } else {
@@ -67,13 +68,11 @@ public class NoiseFilter : ScriptableObject {
             }
             return 1 - Mathf.Abs(noiseValue);
         }
-        //This may be useless, we'll see
         noiseValue = Mathf.Abs(noiseValue);
         noiseDrift = Mathf.Abs(noiseDrift);
         float defaultElevation = 1 - noiseValue;
-        float modifier = Mathf.Abs(mysteryFactor * noiseDrift * defaultElevation);
-        float elevation = noiseDrift * (1 - (noiseValue + modifier)) - 0.0001f;
-        //elevation = Mathf.Clamp01(elevation);
+        float modifier = Mathf.Abs(altitudeCrusher * noiseDrift * defaultElevation);
+        float elevation = Mathf.Max(noiseDrift,0.1f) * (1 - (noiseValue + modifier)) - 0.0001f;
 
         return elevation * elevation * elevation * strength;
     }
