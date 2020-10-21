@@ -12,6 +12,7 @@ public class PlanetGen : MonoBehaviour {
     MeshFilter[] meshFilters;
     TerrainInstance[] terrainInstances;
 
+    [Header("Testing Bools")]
     public bool lagSwitch;
 
     public bool killUpdates;
@@ -25,12 +26,12 @@ public class PlanetGen : MonoBehaviour {
     [HideInInspector]
     public float[] detailLevelDistances = new float[] {
         Mathf.Infinity,
-        3000f * 2,
-        1100f * 2,
-        500f * 2,
-        210f * 2,
-        100f * 2,
-        40f * 2,
+        3000f,
+        1100f,
+        500f,
+        210f,
+        100f,
+        40f,
     };
 
     public Material surfaceMat;
@@ -59,6 +60,7 @@ public class PlanetGen : MonoBehaviour {
     private void Start() {
         timer = new Stopwatch();
         timer.Start();
+        sizeModi = size / 1000;
         Initialize();
         GenerateMesh();
         timer.Stop();
@@ -78,11 +80,9 @@ public class PlanetGen : MonoBehaviour {
         while (unFixed) {
             yield return new WaitForSeconds(1f);
             player.gameObject.GetComponent<Rigidbody>().MovePosition(transform.forward * -100f);
-            Debug.Log("Moved.");
             player.gameObject.GetComponent<Rigidbody>().MovePosition(transform.forward * 100f);
             unFixed = false;
         }
-        Debug.Log("This routine is supposed to terminate");
         StopCoroutine(stupidFix());
     }
 
@@ -138,6 +138,11 @@ public class PlanetGen : MonoBehaviour {
             ocean.transform.localScale = scaleOcean;
         }
 
+        UpdateCollider();
+
+    }
+
+    public void UpdateCollider() {
         for (int i = 0; i < 6; i++) {
             GameObject meshOb = meshFilters[i].gameObject;
             if (meshOb.GetComponent<MeshCollider>() == null) {
@@ -197,7 +202,8 @@ public class PlanetGen : MonoBehaviour {
             mainBuilder.UpdateElevation();
         }
         //mainBuilder.UpdateColors(surfaceMat);
-
+        UpdateCollider();
+        Debug.Log("Collider Updated");
     }
 
     void GenerateColors() {

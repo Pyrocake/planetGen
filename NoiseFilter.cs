@@ -16,7 +16,7 @@ public class NoiseFilter : ScriptableObject {
     public float persistance = .5f;
     //This Factor is currently unutilized
     [Tooltip("Unused")]
-    [Range(0,1)] public float mysteryFactor = 1;
+    [Range(0f,.5f)] public float mysteryFactor = .25f;
     public Vector3 center;
 
     public PlanetGen planetScript;
@@ -39,20 +39,24 @@ public class NoiseFilter : ScriptableObject {
     /// <returns>The noise value at point, cubed, times strength</returns>
     public float Evaluate(Vector3 point, float seaLevel) {
         float noiseValue = 0;
-        float noiseEaser = 0;
+        float noiseDrift = 0;
         float frequency = baseRoughness;
         float amplitude = 1;
-        Vector3 centerOff = new Vector3(center.x + 0.1f, center.y + 0.1f, center.z + 0.1f);
+        float centerChange = .01f;
+        Vector3 centerOff = new Vector3(center.x + centerChange, center.y + centerChange, center.z + centerChange);
 
         if (seaLevel != 0) {
 
             for (int i = 0; i < octaves; i++) {
                 float v = noise.Evaluate(point * frequency + center);
-                float changer = noise.Evaluate(point * frequency + centerOff);
+                float drift = noise.Evaluate(point * (frequency/4f) + centerOff);
                 noiseValue += v * amplitude;
-                noiseEaser += changer * amplitude;
+                noiseDrift += drift * amplitude;
                 frequency *= roughness;
                 amplitude *= persistance;
+
+                centerChange += .01f;
+                centerOff = new Vector3(center.x + centerChange, center.y + centerChange, center.z + centerChange);
             }
         } else {
             for (int i = 0; i < octaves; i++) {
@@ -64,8 +68,11 @@ public class NoiseFilter : ScriptableObject {
             return 1 - Mathf.Abs(noiseValue);
         }
         //This may be useless, we'll see
-        //original line: float elevation = 1 - Mathf.Abs(noiseValue);
-        float elevation = 1 - (Mathf.Abs(noiseValue) + Mathf.Abs(0.3f * Mathf.Abs(noiseEaser) * (1 - Mathf.Abs(noiseValue)))) - 0.0001f;
+        noiseValue = Mathf.Abs(noiseValue);
+        noiseDrift = Mathf.Abs(noiseDrift);
+        float defaultElevation = 1 - noiseValue;
+        float modifier = Mathf.Abs(mysteryFactor * noiseDrift * defaultElevation);
+        float elevation = noiseDrift * (1 - (noiseValue + modifier)) - 0.0001f;
         //elevation = Mathf.Clamp01(elevation);
 
         return elevation * elevation * elevation * strength;
