@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
-
 //Original version of the ConditionalHideAttribute created by Brecht Lecluyse (www.brechtos.com)
 //Modified by: Sebastian Lague
 
@@ -69,3 +69,4 @@ public class ConditionalHidePropertyDrawer : PropertyDrawer {
         }
     }
 }
+#endif

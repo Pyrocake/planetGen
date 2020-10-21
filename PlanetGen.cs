@@ -39,6 +39,8 @@ public class PlanetGen : MonoBehaviour {
 
     public Transform player;
 
+    public Erosion erosion;
+
     [HideInInspector]
     public float distanceToPlayer;
     [HideInInspector]
@@ -82,10 +84,6 @@ public class PlanetGen : MonoBehaviour {
     private IEnumerator PlanetGenerationLoop() {
         while (true) {
             yield return new WaitForSeconds(0.5f);
-            if (transform.hasChanged) {
-                
-                transform.hasChanged = false;
-            }
             UpdateMesh();
         }
     }
