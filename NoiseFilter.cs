@@ -16,7 +16,7 @@ public class NoiseFilter : ScriptableObject {
     public float persistance = .5f;
     [Range(0f,.75f)] public float altitudeCrusher = .35f;
     [Range(2,16)] public int driftFactor = 4;
-    [Header("WARNING: Higher values will compound")]
+    [Header("WARNING: Higher values may compound")]
     [Range(0.01f, .2f)] public float driftOffset = .1f;
     public Vector3 center;
 

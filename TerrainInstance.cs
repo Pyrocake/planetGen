@@ -27,6 +27,8 @@ public class TerrainInstance {
 
     ShapeGenerator shapeGenerator;
 
+    public List<Vector3> highestDefined = new List<Vector3>();
+
     public TerrainInstance(Mesh mesh, Vector3 localUP, float radius, PlanetGen planetGen, MainBuilder mainBuilder) {
         this.mesh = mesh;
         this.localUP = localUP;
@@ -190,6 +192,7 @@ public class Tile {
                     child.GenerateChildren();
                 }
             }
+            
         }
     }
 
@@ -203,7 +206,7 @@ public class Tile {
                 if (children.Length > 0) {
                     foreach (Tile child in children) {
                         child.UpdateTile();
-                    }
+                    }   
                 } else {
                     GenerateChildren();
                 }

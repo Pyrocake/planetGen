@@ -20,6 +20,8 @@ public class PlanetGen : MonoBehaviour {
 
     public float size = 2000;
 
+    [Range(2, 32)] public int colliderSize = 4;
+
     //[HideInInspector]
     public float[] detailLevelDistances = new float[] {
         Mathf.Infinity,
@@ -63,7 +65,7 @@ public class PlanetGen : MonoBehaviour {
         StopAllCoroutines();
         StartCoroutine(PlanetGenerationLoop());
 
-        StartCoroutine(stupidFix());
+        StartCoroutine(StupidFix());
     }
 
     private void Update() {
@@ -71,14 +73,14 @@ public class PlanetGen : MonoBehaviour {
         distanceToPlayerAdjusted = distanceToPlayer * distanceToPlayer;
     }
 
-    private IEnumerator stupidFix() {
+    private IEnumerator StupidFix() {
         while (unFixed) {
             yield return new WaitForSeconds(1f);
             player.gameObject.GetComponent<Rigidbody>().MovePosition(transform.forward * -100f);
             player.gameObject.GetComponent<Rigidbody>().MovePosition(transform.forward * 100f);
             unFixed = false;
         }
-        StopCoroutine(stupidFix());
+        StopCoroutine(StupidFix());
     }
 
     private IEnumerator PlanetGenerationLoop() {
@@ -87,6 +89,32 @@ public class PlanetGen : MonoBehaviour {
             UpdateMesh();
         }
     }
+
+    /*private void OnDrawGizmos() {
+        if (terrainInstances != null) {
+            coordCollider.Clear();
+            foreach (TerrainInstance face in terrainInstances) {
+                foreach (Tile tile in face.visibleChildren) {
+                    for (int i = 0; i < tile.vertices.Length; i++) {
+                        Vector3 playerOnPlanet = player.transform.position - transform.position;
+                        Vector3 pointOnPlanet = transform.TransformPoint(tile.vertices[i]);
+                        int count = 0;
+                        if (Vector3.Distance(tile.vertices[i].normalized * size, playerOnPlanet.normalized * size) <= colliderSize) {
+                            Gizmos.color = new Color(1, 0, 0, 0.2f);
+                            Gizmos.DrawSphere(pointOnPlanet, .2f);
+                            Gizmos.color = new Color(0, 0, 1);
+                            Gizmos.DrawLine(pointOnPlanet, pointOnPlanet * (1 + (count * .1f)));
+                            Gizmos.color = new Color(0, 1, 0);
+                            Gizmos.DrawLine(transform.TransformPoint(playerOnPlanet), pointOnPlanet);
+                            coordCollider.Add(tile.vertices[i]);
+                            count++;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    */
 
     void Initialize() {
 
@@ -125,11 +153,12 @@ public class PlanetGen : MonoBehaviour {
             Vector3 scaleOcean = new Vector3(scalerOcean, scalerOcean, scalerOcean);
             ocean.transform.localScale = scaleOcean;
         }
-
-        UpdateCollider();
+        LocalCollider();
+        //UpdateCollider();
 
     }
 
+    //Deprecated, collider is entire planet instead of localized.
     public void UpdateCollider() {
         for (int i = 0; i < 6; i++) {
             GameObject meshOb = meshFilters[i].gameObject;
@@ -140,6 +169,74 @@ public class PlanetGen : MonoBehaviour {
             meshOb.GetComponent<MeshCollider>().sharedMesh = terrainInstances[i].mesh;
             meshOb.layer = 10;
         }
+    }
+
+    public void LocalCollider() {
+        Mesh mesh = new Mesh();
+
+        if (!GameObject.Find("Collider")) {
+            GameObject colObj = new GameObject("Collider");
+            colObj.transform.parent = transform;
+            colObj.AddComponent<MeshFilter>();
+            colObj.AddComponent<MeshCollider>();
+            colObj.layer = 10;
+        }
+
+        GameObject collideObj = GameObject.Find("Collider");
+
+        Vector3 fakeZero = player.transform.position - transform.position;
+
+        //Old Calculations for Virtual Axis
+        //Vector3 collideAxisA = new Vector3(fakeZero.normalized.y, fakeZero.normalized.z, fakeZero.normalized.x);
+        //Vector3 collideAxisB = Vector3.Cross(fakeZero.normalized, collideAxisA);
+
+        int gridSize = colliderSize;
+        float offset = gridSize / 2;
+
+        Vector3 collideAxisA = player.forward / offset;
+        Vector3 collideAxisB = player.right / offset;
+
+        Vector3[] verts = new Vector3[(gridSize+1) * (gridSize+1)];
+        int index = 0;
+        //Debug.Log("New Run");
+        for (int x = 0; x < gridSize+1; x++) {
+            for (int y = 0; y < gridSize+1; y++) {
+                //Pseudocode: The vert Vector at index = the relative x times x + the relative y times y + player position, minus the offset x and y to center it
+                Vector3 positionOnLand = (collideAxisA * x) + (collideAxisB * y) + fakeZero + (-collideAxisA * offset) + (-collideAxisB * offset);
+                positionOnLand = positionOnLand.normalized;
+                float elevation =  shapeBuilder.Evaluate(positionOnLand, 1);
+                positionOnLand = positionOnLand * (1 + elevation) * size;
+                verts[index] = positionOnLand;
+                index++;
+            }
+        }
+
+        int[] tris = new int[verts.Length * 6];
+        int triangle = 0;
+        for (int x = 0; x < gridSize; x++) {
+            for (int y = 0; y < gridSize; y++) {
+
+                //offsets vert # by row length, per loop
+                int level = x * (gridSize + 1);
+
+                tris[triangle + 0] = (level + y); //Assuming vertex 0,
+                tris[triangle + 1] = (level + y + (gridSize + 1)); //This would be 5,
+                tris[triangle + 2] = (level + y + 1); //and 1
+
+                tris[triangle + 3] = (level + y + 1); //1 again
+                tris[triangle + 4] = (level + y + (gridSize + 1)); //5 again
+                tris[triangle + 5] = (level + y + (gridSize + 1) + 1); //6, completing a square.
+
+                triangle += 6;
+            }
+        }
+        mesh.Clear();
+        mesh.vertices = verts;
+        mesh.triangles = tris;
+        //mesh.RecalculateNormals();
+        collideObj.GetComponent<MeshFilter>().sharedMesh = mesh;
+        collideObj.GetComponent<MeshCollider>().sharedMesh = mesh;
+
     }
 
     public void UpdateUV(Mesh mesh) {
@@ -188,7 +285,8 @@ public class PlanetGen : MonoBehaviour {
         if (lagSwitch) {
             mainBuilder.UpdateElevation();
         }
-        UpdateCollider();
+        //UpdateCollider();
+        LocalCollider();
     }
 
     void GenerateColors() {
