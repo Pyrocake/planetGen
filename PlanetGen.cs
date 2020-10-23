@@ -41,7 +41,8 @@ public class PlanetGen : MonoBehaviour {
 
     public Transform player;
 
-    public Erosion erosion;
+    //Not Implemented
+    //public Erosion erosion;
 
     [HideInInspector]
     public float distanceToPlayer;
@@ -75,7 +76,7 @@ public class PlanetGen : MonoBehaviour {
 
     private IEnumerator StupidFix() {
         while (unFixed) {
-            yield return new WaitForSeconds(1f);
+            yield return null;
             player.gameObject.GetComponent<Rigidbody>().MovePosition(transform.forward * -100f);
             player.gameObject.GetComponent<Rigidbody>().MovePosition(transform.forward * 100f);
             unFixed = false;
@@ -91,28 +92,7 @@ public class PlanetGen : MonoBehaviour {
     }
 
     /*private void OnDrawGizmos() {
-        if (terrainInstances != null) {
-            coordCollider.Clear();
-            foreach (TerrainInstance face in terrainInstances) {
-                foreach (Tile tile in face.visibleChildren) {
-                    for (int i = 0; i < tile.vertices.Length; i++) {
-                        Vector3 playerOnPlanet = player.transform.position - transform.position;
-                        Vector3 pointOnPlanet = transform.TransformPoint(tile.vertices[i]);
-                        int count = 0;
-                        if (Vector3.Distance(tile.vertices[i].normalized * size, playerOnPlanet.normalized * size) <= colliderSize) {
-                            Gizmos.color = new Color(1, 0, 0, 0.2f);
-                            Gizmos.DrawSphere(pointOnPlanet, .2f);
-                            Gizmos.color = new Color(0, 0, 1);
-                            Gizmos.DrawLine(pointOnPlanet, pointOnPlanet * (1 + (count * .1f)));
-                            Gizmos.color = new Color(0, 1, 0);
-                            Gizmos.DrawLine(transform.TransformPoint(playerOnPlanet), pointOnPlanet);
-                            coordCollider.Add(tile.vertices[i]);
-                            count++;
-                        }
-                    }
-                }
-            }
-        }
+        
     }
     */
 
