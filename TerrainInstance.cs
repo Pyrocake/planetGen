@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
@@ -28,6 +29,7 @@ public class TerrainInstance {
     ShapeGenerator shapeGenerator;
 
     public List<Vector3> highestDefined = new List<Vector3>();
+    Queue<TileThreadInfo<Tile>> tileThreadInfoQueue = new Queue<TileThreadInfo<Tile>>();
 
     public TerrainInstance(Mesh mesh, Vector3 localUP, float radius, PlanetGen planetGen, MainBuilder mainBuilder) {
         this.mesh = mesh;
@@ -38,6 +40,8 @@ public class TerrainInstance {
 
         axisA = new Vector3(localUP.y, localUP.z, localUP.x);
         axisB = Vector3.Cross(localUP, axisA);
+
+        
     }
 
     public void BuildTileTree() {
@@ -93,6 +97,7 @@ public class TerrainInstance {
         int borderTriangleOffset = 0;
         parentTile.GetVisibleChildren();
         foreach (Tile child in visibleChildren) {
+            //this.RequestTile(OnTileDataReceived(child, tri), child);
             child.GetNeighborLOD();
             (Vector3[], int[], int[], Vector3[], Vector3[]) vertsAndTris = (new Vector3[0], new int[0], new int[0], new Vector3[0], new Vector3[0]);
 
@@ -134,6 +139,64 @@ public class TerrainInstance {
         mesh.triangles = triangles.ToArray();
         mesh.normals = normals.ToArray();
         planetGen.UpdateUV(mesh);
+    }
+
+    public void OnTileDataReceived(Tile tile, int triangleOffset, int borderTriangleOffset) {
+        Debug.Log("Terrain Received");
+        tile.GetNeighborLOD();
+        (Vector3[], int[], int[], Vector3[], Vector3[]) vertsAndTris = (new Vector3[0], new int[0], new int[0], new Vector3[0], new Vector3[0]);
+
+        if (tile.vertices == null) {
+            vertsAndTris = tile.CalculateVertsAndTris(triangleOffset, borderTriangleOffset);
+        } else if (tile.vertices.Length == 0 || tile.triangles != Presets.quadTemplateTriangles[(tile.neighbors[0] | tile.neighbors[1] * 2 | tile.neighbors[2] * 4 | tile.neighbors[3] * 8)]) {
+            vertsAndTris = tile.CalculateVertsAndTris(triangleOffset, borderTriangleOffset);
+        } else {
+            vertsAndTris = (tile.vertices, tile.GetTrianglesWithOffset(triangleOffset), tile.GetBorderTrianglesWithOffset(borderTriangleOffset, triangleOffset), tile.borderVertices, tile.normals);
+        }
+
+        vertices.AddRange(vertsAndTris.Item1);
+        triangles.AddRange(vertsAndTris.Item2);
+        borderTriangles.AddRange(vertsAndTris.Item3);
+        borderVertices.AddRange(vertsAndTris.Item4);
+        normals.AddRange(vertsAndTris.Item5);
+
+        // Increase offset to accurately point to the next slot in the lists
+        triangleOffset += (Presets.quadRes + 1) * (Presets.quadRes + 1);
+        borderTriangleOffset += vertsAndTris.Item4.Length;
+    }
+
+    public void RequestTile(Action<Tile> callback, Tile tile) {
+        ThreadStart threadStart = delegate {
+            TileThread(callback, tile);
+        };
+
+        new Thread(threadStart).Start();
+    }
+
+    void TileThread(Action<Tile> callback, Tile tile) {
+        lock (tileThreadInfoQueue) {
+            tileThreadInfoQueue.Enqueue(new TileThreadInfo<Tile>(callback, tile));
+        }
+    }
+
+    struct TileThreadInfo<T> {
+        public readonly Action<T> callback;
+        public readonly T parameter;
+
+        public TileThreadInfo(Action<T> callback, T parameter) {
+            this.callback = callback;
+            this.parameter = parameter;
+        }
+    }
+
+    public void DoUpdate() {
+        if (tileThreadInfoQueue.Count > 0) {
+            Debug.Log(tileThreadInfoQueue.Count);
+            for (int i = 0; i < tileThreadInfoQueue.Count; i++) {
+                TileThreadInfo<Tile> threadInfo = tileThreadInfoQueue.Dequeue();
+                threadInfo.callback(threadInfo.parameter);
+            }
+        }
     }
 }
 public class Tile {

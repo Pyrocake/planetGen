@@ -14,12 +14,17 @@ public class MainBuilder {
 
     public BiomeBuilder settings;
 
+    public int mapWidth;
+    public int mapHeight;
+
     INoiseFilter biomeNoiseFilter;
 
     public void UpdateSettings(BiomeBuilder biomeBuilder, PlanetGen planet) {
         settings = biomeBuilder;
         surfaceMat = biomeBuilder.material;
         planetGen = planet;
+        mapHeight = planet.mapHeight;
+        mapWidth = planet.mapWidth;
 
         if (texture == null || texture.height != settings.biomeColorSettings.biomes.Length) {
             Debug.Log("Texture initialization beginning");
@@ -89,6 +94,121 @@ public class MainBuilder {
         texture.Apply();
         surfaceMat.SetTexture("_texture", texture);
         surfaceMat.SetFloat("_seaLevel", settings.oceanSettings.seaLevel);
+    }
+
+    public Texture2D CreateMap() {
+        float oldRange = surfaceMat.GetVector("_elevationMinMax").y - surfaceMat.GetVector("_elevationMinMax").x;
+        float oldMin = surfaceMat.GetVector("_elevationMinMax").x;
+
+        Texture2D newMap = new Texture2D(mapWidth, mapHeight,TextureFormat.RGBA32, false);
+
+        Color[] colors = new Color[mapWidth * mapHeight];
+
+        int quad = mapWidth / 4;
+        int index = 0;
+        float seaLevel = planetGen.biomeBuilder.oceanSettings.seaLevel;
+
+        for (int i = 0; i < mapHeight; i++) {
+            int axis = 0;
+            for (int j = 0; j < mapWidth; j++) {
+                float interHeight = i / (float)mapHeight;
+                Vector3 upAxis = Vector3.Lerp(Vector3.down, Vector3.up, interHeight);
+                Vector3 sideAxis = Vector3.zero;
+                //Currently Unneeded
+                Vector3 kAxis = Vector3.zero;
+                
+                if (j <= quad) {
+                    float interWidth = axis / (float)mapWidth;
+                    interWidth *= 4;
+                    sideAxis = Vector3.Slerp(Vector3.forward, Vector3.left, interWidth);
+                } else if (j <= 2 * quad && quad < j) {
+                    int NewAxis = axis - quad;
+                    float interWidth = NewAxis / (float)mapWidth;
+                    interWidth *= 4;
+                    sideAxis = Vector3.Slerp(Vector3.left, Vector3.back, interWidth);
+                } else if (j <= 3 * quad && quad * 2 < j) {
+                    int NewAxis = axis - (2 * quad);
+                    float interWidth = NewAxis / (float)mapWidth;
+                    interWidth *= 4;
+                    sideAxis = Vector3.Slerp(Vector3.back, Vector3.right, interWidth);
+                } else if (j <= 4 * quad && quad * 3 < j) {
+                    int NewAxis = axis - (3 * quad);
+                    float interWidth = NewAxis / (float)mapWidth;
+                    interWidth *= 4;
+                    sideAxis = Vector3.Slerp(Vector3.right, Vector3.forward, interWidth);
+                } else {
+                    Debug.LogWarning("Nothing should get this far.");
+                }
+
+                float oneMinus = 1 - upAxis.magnitude;
+
+                Vector3 positionOnSphere = upAxis + (sideAxis * oneMinus) + (kAxis * oneMinus);
+                Vector3 position = positionOnSphere.normalized;
+                float elevation = planetGen.shapeBuilder.Evaluate(position, 1);
+                Vector3 positionOnLand = position * (1 + elevation) * planetGen.size;
+
+                float preY = BiomePoint(position.normalized, planetGen);
+                preY = Mathf.Lerp(0, settings.biomeColorSettings.biomes.Length, preY);
+
+                float newVal = ((positionOnLand.magnitude - oldMin) / oldRange);
+                /*
+                if (newVal < seaLevel) {
+                    newVal = (newVal * (seaLevel - 0)) / (seaLevel);
+                } else {
+                    newVal = (((newVal - seaLevel) * (1)) / (1 - seaLevel)) + seaLevel;
+                }
+                */
+                //float preX = newVal;
+
+                //preX = Mathf.Lerp(0, biomeMap.width, preX);
+
+                int yFinal = (int)preY;
+                //int xFinal = (int)preX;
+
+                //colors[index] = biomeMap.GetPixel(xFinal, yFinal);
+                if (newVal > seaLevel) {
+                    //Initial Color Gradient
+                    Gradient landGrad = settings.biomeColorSettings.biomes[yFinal].gradient;
+                    Color landCol = landGrad.Evaluate(newVal);
+                    //Difference Between Actual and Initial
+                    float testDif = yFinal - preY;
+
+                    if (testDif > 0 && yFinal != 0) {
+                        //May sample biome down if not lowest biome
+                        Gradient landSample = settings.biomeColorSettings.biomes[yFinal - 1].gradient;
+                        Color sampleColor = landSample.Evaluate(newVal);
+                        landCol = Color.Lerp(landCol, sampleColor, Mathf.Abs(testDif));
+
+                    } else if (testDif < 0 && yFinal != settings.biomeColorSettings.biomes.Length - 1) {
+                        //May sample up if not highest biome
+                        Gradient landSample = settings.biomeColorSettings.biomes[yFinal + 1].gradient;
+                        Color sampleColor = landSample.Evaluate(newVal);
+                        landCol = Color.Lerp(landCol, sampleColor, Mathf.Abs(testDif));
+
+                    }
+                    colors[index] = landCol;
+                } else {
+                    Gradient waterGrad = settings.oceanSettings.oceanColor;
+                    Color waterCol = waterGrad.Evaluate(newVal);
+                    colors[index] = waterCol;
+                }
+                axis++;
+                index++;
+            }
+        }
+
+        newMap.SetPixels(colors);
+        newMap.Apply();
+        newMap.wrapMode = TextureWrapMode.Clamp;
+        newMap.filterMode = FilterMode.Bilinear;
+        SaveTextureAsPNG(newMap, "C:\\Users\\ejhth\\Desktop\\Unity Components\\Testmap.png");
+        return newMap;
+    }
+
+    public static void SaveTextureAsPNG(Texture2D _texture, string _fullPath) {
+        byte[] _bytes = _texture.EncodeToPNG();
+        System.IO.File.WriteAllBytes(_fullPath, _bytes);
+        Debug.Log(_bytes.Length / 1024 + "Kb was saved as: " + _fullPath);
     }
 
 }

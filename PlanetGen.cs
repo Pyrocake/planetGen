@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System;
+using System.Threading;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
@@ -56,6 +58,10 @@ public class PlanetGen : MonoBehaviour {
 
     bool unFixed = true;
 
+    public int mapWidth = 1600;
+    public int mapHeight = 900;
+    public Texture2D map;
+
     private void Awake() {
         player = GameObject.FindGameObjectWithTag("Player").transform;
         distanceToPlayer = Vector3.Distance(transform.position, player.position);
@@ -72,6 +78,9 @@ public class PlanetGen : MonoBehaviour {
     private void Update() {
         distanceToPlayer = Vector3.Distance(transform.position, player.position);
         distanceToPlayerAdjusted = distanceToPlayer * distanceToPlayer;
+        LocalCollider();
+        foreach (TerrainInstance terrain in terrainInstances) {
+        }
     }
 
     private IEnumerator StupidFix() {
@@ -91,10 +100,8 @@ public class PlanetGen : MonoBehaviour {
         }
     }
 
-    /*private void OnDrawGizmos() {
-        
-    }
-    */
+    //private void OnDrawGizmos() {
+    //}
 
     void Initialize() {
 
@@ -133,7 +140,7 @@ public class PlanetGen : MonoBehaviour {
             Vector3 scaleOcean = new Vector3(scalerOcean, scalerOcean, scalerOcean);
             ocean.transform.localScale = scaleOcean;
         }
-        LocalCollider();
+        
         //UpdateCollider();
 
     }
@@ -266,7 +273,7 @@ public class PlanetGen : MonoBehaviour {
             mainBuilder.UpdateElevation();
         }
         //UpdateCollider();
-        LocalCollider();
+        //LocalCollider();
     }
 
     void GenerateColors() {
@@ -286,5 +293,12 @@ public class PlanetGen : MonoBehaviour {
         if (Application.isPlaying) {
             this.Start();
         }
+    }
+
+    public Texture2D CreateTheMap() {
+        //This isn't in MainBuilder because the editor tab doesn't like that one for some reason
+        Debug.Log("Map Creation Initializing");
+        map = mainBuilder.CreateMap();
+        return map;
     }
 }
