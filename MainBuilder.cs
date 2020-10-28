@@ -114,35 +114,41 @@ public class MainBuilder {
                 float interHeight = i / (float)mapHeight;
                 Vector3 upAxis = Vector3.Lerp(Vector3.down, Vector3.up, interHeight);
                 Vector3 sideAxis = Vector3.zero;
-                //Currently Unneeded
-                Vector3 kAxis = Vector3.zero;
                 
                 if (j <= quad) {
+
                     float interWidth = axis / (float)mapWidth;
                     interWidth *= 4;
                     sideAxis = Vector3.Slerp(Vector3.forward, Vector3.left, interWidth);
+
                 } else if (j <= 2 * quad && quad < j) {
+
                     int NewAxis = axis - quad;
                     float interWidth = NewAxis / (float)mapWidth;
                     interWidth *= 4;
                     sideAxis = Vector3.Slerp(Vector3.left, Vector3.back, interWidth);
+
                 } else if (j <= 3 * quad && quad * 2 < j) {
+
                     int NewAxis = axis - (2 * quad);
                     float interWidth = NewAxis / (float)mapWidth;
                     interWidth *= 4;
                     sideAxis = Vector3.Slerp(Vector3.back, Vector3.right, interWidth);
+
                 } else if (j <= 4 * quad && quad * 3 < j) {
+
                     int NewAxis = axis - (3 * quad);
                     float interWidth = NewAxis / (float)mapWidth;
                     interWidth *= 4;
                     sideAxis = Vector3.Slerp(Vector3.right, Vector3.forward, interWidth);
+
                 } else {
                     Debug.LogWarning("Nothing should get this far.");
                 }
 
                 float oneMinus = 1 - upAxis.magnitude;
 
-                Vector3 positionOnSphere = upAxis + (sideAxis * oneMinus) + (kAxis * oneMinus);
+                Vector3 positionOnSphere = upAxis + (sideAxis * oneMinus);
                 Vector3 position = positionOnSphere.normalized;
                 float elevation = planetGen.shapeBuilder.Evaluate(position, 1);
                 Vector3 positionOnLand = position * (1 + elevation) * planetGen.size;
@@ -151,21 +157,9 @@ public class MainBuilder {
                 preY = Mathf.Lerp(0, settings.biomeColorSettings.biomes.Length, preY);
 
                 float newVal = ((positionOnLand.magnitude - oldMin) / oldRange);
-                /*
-                if (newVal < seaLevel) {
-                    newVal = (newVal * (seaLevel - 0)) / (seaLevel);
-                } else {
-                    newVal = (((newVal - seaLevel) * (1)) / (1 - seaLevel)) + seaLevel;
-                }
-                */
-                //float preX = newVal;
-
-                //preX = Mathf.Lerp(0, biomeMap.width, preX);
 
                 int yFinal = (int)preY;
-                //int xFinal = (int)preX;
 
-                //colors[index] = biomeMap.GetPixel(xFinal, yFinal);
                 if (newVal > seaLevel) {
                     //Initial Color Gradient
                     Gradient landGrad = settings.biomeColorSettings.biomes[yFinal].gradient;
