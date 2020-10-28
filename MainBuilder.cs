@@ -19,6 +19,8 @@ public class MainBuilder {
 
     INoiseFilter biomeNoiseFilter;
 
+    public List<Vector3> seaLevelPoints = new List<Vector3>();
+
     public void UpdateSettings(BiomeBuilder biomeBuilder, PlanetGen planet) {
         settings = biomeBuilder;
         surfaceMat = biomeBuilder.material;
@@ -94,6 +96,23 @@ public class MainBuilder {
         texture.Apply();
         surfaceMat.SetTexture("_texture", texture);
         surfaceMat.SetFloat("_seaLevel", settings.oceanSettings.seaLevel);
+    }
+
+    public void SeaLevelPoints(TerrainInstance terrain) {
+        float seaLevel = planetGen.biomeBuilder.oceanSettings.seaLevel;
+        Vector3[] verts = terrain.mesh.vertices;
+        Debug.Log("Terrain is " + verts.Length + " verts long");
+        for (int i = 0; i < Mathf.Min(verts.Length, 10000); i++) {
+            if (terrain.mesh.uv[i].y < seaLevel + 0.01f && terrain.mesh.uv[i].y > seaLevel - 0.001f) {
+                seaLevelPoints.Add(verts[i]);
+                //Debug.Log("Adding point: " + i);
+            }
+        }
+    }
+    public float MoistureMap(Vector3 point) {
+        float wetness = 0f;
+
+        return wetness;
     }
 
     public Texture2D CreateMap() {

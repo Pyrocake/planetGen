@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
+using Random = UnityEngine.Random;
 
 public class PlanetGen : MonoBehaviour {
 
@@ -100,8 +101,14 @@ public class PlanetGen : MonoBehaviour {
         }
     }
 
-    //private void OnDrawGizmos() {
-    //}
+    private void OnDrawGizmos() {
+        if (Application.isPlaying) {
+            for (int i = 0; i < mainBuilder.seaLevelPoints.Count; i++) {
+                Gizmos.color = Color.red;
+                Gizmos.DrawSphere(transform.TransformPoint(mainBuilder.seaLevelPoints[i]), 3);
+            }
+        }
+    }
 
     void Initialize() {
 
@@ -254,13 +261,12 @@ public class PlanetGen : MonoBehaviour {
     void GenerateMesh() {
         foreach (TerrainInstance face in terrainInstances) {
             face.BuildTileTree();
-
         }
         if (lagSwitch) {
             mainBuilder.UpdateElevation();
             mainBuilder.UpdateColors();
         }
-
+        Debug.Log("Count: " + mainBuilder.seaLevelPoints.Count);
 
     }
 
@@ -282,8 +288,10 @@ public class PlanetGen : MonoBehaviour {
 
     public void OnBiomeSettingsUpdated() {
         if (Application.isPlaying) {
+            mainBuilder.seaLevelPoints.Clear();
             foreach (TerrainInstance face in terrainInstances) {
                 UpdateUV(face.mesh);
+                mainBuilder.SeaLevelPoints(face);
             }
             mainBuilder.UpdateElevation();
             mainBuilder.UpdateColors();

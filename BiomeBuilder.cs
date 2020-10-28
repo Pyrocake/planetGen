@@ -8,13 +8,13 @@ public class BiomeBuilder : ScriptableObject {
     public Material material;
     public enum ViewMode {
         Default,
-        Plates,
-        Watershed,
+        Heat,
         Rain
     }
     public ViewMode viewMode;
 
     public BiomeColorSettings biomeColorSettings;
+    public BiomeRules biomeRules;
     public OceanSettings oceanSettings;
 
     [System.Serializable]
@@ -38,6 +38,15 @@ public class BiomeBuilder : ScriptableObject {
             [Range(0, 1)]
             public float tintPercent;
         }
+    }
+    [System.Serializable]
+    public class BiomeRules {
+        [Header("Heat Variables")]
+        public float longitudePenalty = 50f;
+
+        [Header("Water Variables")]
+        [Range(0,500)] public float rainShadow = 100f;
+        public float idealDistance = 200;
     }
 
     [System.Serializable]
