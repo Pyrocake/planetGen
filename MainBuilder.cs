@@ -59,7 +59,10 @@ public class MainBuilder {
         return rainfall;
     }
 
-    public float CalculateHeat(Vector3 point, float elevationNormal) {
+    public float CalculateHeat(Vector3 point) {
+        float oldRange = surfaceMat.GetVector("_elevationMinMax").y - surfaceMat.GetVector("_elevationMinMax").x;
+        float oldMin = surfaceMat.GetVector("_elevationMinMax").x;
+        float elevationNormal = (point.magnitude - oldMin) / oldRange;
         point = point.normalized;
         float heat = Mathf.Clamp01(planetGen.shapeBuilder.Evaluate(point, 2, elevationNormal));
         return heat;
@@ -110,12 +113,13 @@ public class MainBuilder {
         surfaceMat.SetFloat("_seaLevel", settings.oceanSettings.seaLevel);
     }
     public void UVMapBiomes(Mesh mesh) {
+        
         Vector3[] verts = mesh.vertices;
         Vector2[] uv3 = new Vector2[mesh.vertices.Length];
         for (int i = 0; i < verts.Length; i++) {
             Vector3 point = verts[i];
             float rainAmount = CalculateRainfall(point);
-            float heatAmount = CalculateHeat(point, mesh.uv[i].y);
+            float heatAmount = CalculateHeat(point);
             uv3[i].x = heatAmount;
             uv3[i].y = rainAmount;
         }

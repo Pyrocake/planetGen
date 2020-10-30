@@ -171,7 +171,7 @@ public class NoiseFilter : ScriptableObject {
                 amplitude *= persistance;
             }
             float amount = Mathf.Clamp01(noiseValue);
-            amount = ratio * (1 - (amount * amount * .25f)) * (1 + (noiseDrift * noiseDrift * .5f)) + (.1f * ratio) - (altitude * altitude * altitude * .1f);
+            amount = ratio * (1 - (amount * amount * .25f)) * (1 + (noiseDrift * noiseDrift * .5f)) + (.1f * ratio) - (altitude * .5f);
             return Mathf.Clamp01(amount);
         }
 
