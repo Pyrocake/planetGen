@@ -70,18 +70,18 @@ public class PlanetGen : MonoBehaviour {
     private void Start() {
         Initialize();
         GenerateMesh();
+        
         StopAllCoroutines();
         StartCoroutine(PlanetGenerationLoop());
 
         StartCoroutine(StupidFix());
+
     }
 
     private void Update() {
         distanceToPlayer = Vector3.Distance(transform.position, player.position);
         distanceToPlayerAdjusted = distanceToPlayer * distanceToPlayer;
         LocalCollider();
-        foreach (TerrainInstance terrain in terrainInstances) {
-        }
     }
 
     private IEnumerator StupidFix() {
@@ -103,10 +103,7 @@ public class PlanetGen : MonoBehaviour {
 
     private void OnDrawGizmos() {
         if (Application.isPlaying) {
-            for (int i = 0; i < mainBuilder.seaLevelPoints.Count; i++) {
-                Gizmos.color = Color.red;
-                Gizmos.DrawSphere(transform.TransformPoint(mainBuilder.seaLevelPoints[i]), 3);
-            }
+            
         }
     }
 
@@ -198,7 +195,7 @@ public class PlanetGen : MonoBehaviour {
                 //Pseudocode: The vert Vector at index = the relative x times x + the relative y times y + player position, minus the offset x and y to center it
                 Vector3 positionOnLand = (collideAxisA * x) + (collideAxisB * y) + fakeZero + (-collideAxisA * offset) + (-collideAxisB * offset);
                 positionOnLand = positionOnLand.normalized;
-                float elevation =  shapeBuilder.Evaluate(positionOnLand, 1);
+                float elevation =  shapeBuilder.Evaluate(positionOnLand, 0);
                 positionOnLand = positionOnLand * (1 + elevation) * size;
                 verts[index] = positionOnLand;
                 index++;
@@ -227,7 +224,6 @@ public class PlanetGen : MonoBehaviour {
         mesh.Clear();
         mesh.vertices = verts;
         mesh.triangles = tris;
-        //mesh.RecalculateNormals();
         collideObj.GetComponent<MeshFilter>().sharedMesh = mesh;
         collideObj.GetComponent<MeshCollider>().sharedMesh = mesh;
 
@@ -266,8 +262,6 @@ public class PlanetGen : MonoBehaviour {
             mainBuilder.UpdateElevation();
             mainBuilder.UpdateColors();
         }
-        Debug.Log("Count: " + mainBuilder.seaLevelPoints.Count);
-
     }
 
     void UpdateMesh() {
@@ -286,15 +280,30 @@ public class PlanetGen : MonoBehaviour {
         mainBuilder.UpdateColors();
     }
 
+    public void GenerateRain(Mesh mesh) {
+        mainBuilder.UVMapBiomes(mesh);
+    }
+
     public void OnBiomeSettingsUpdated() {
         if (Application.isPlaying) {
-            mainBuilder.seaLevelPoints.Clear();
             foreach (TerrainInstance face in terrainInstances) {
                 UpdateUV(face.mesh);
-                mainBuilder.SeaLevelPoints(face);
             }
             mainBuilder.UpdateElevation();
             mainBuilder.UpdateColors();
+            switch ((int)biomeBuilder.viewMode) {
+                case 0:
+                    surfaceMat.SetFloat("_showVars", 0);
+                    break;
+                case 1:
+                    surfaceMat.SetFloat("_showVars", 1);
+                    surfaceMat.SetFloat("_showRain", 0);
+                    break;
+                case 2:
+                    surfaceMat.SetFloat("_showVars", 1);
+                    surfaceMat.SetFloat("_showRain", 1);
+                    break;
+            }
         }
     }
     public void OnShapeSettingsUpdated() {

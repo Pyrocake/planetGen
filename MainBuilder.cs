@@ -19,7 +19,7 @@ public class MainBuilder {
 
     INoiseFilter biomeNoiseFilter;
 
-    public List<Vector3> seaLevelPoints = new List<Vector3>();
+    public List<Vector3> rainfall = new List<Vector3>();
 
     public void UpdateSettings(BiomeBuilder biomeBuilder, PlanetGen planet) {
         settings = biomeBuilder;
@@ -39,7 +39,7 @@ public class MainBuilder {
     }
 
     public void CalculateElevation(Vector3 pointOnUnit) {
-        float elevation = planetGen.shapeBuilder.Evaluate(pointOnUnit, 1);
+        float elevation = planetGen.shapeBuilder.Evaluate(pointOnUnit, 0);
         Vector3 elevate = pointOnUnit * (1 + elevation) * planetGen.size;
         elevationMinMax.AddValue(elevate.magnitude);
     }
@@ -51,6 +51,18 @@ public class MainBuilder {
         if (Application.isPlaying) {
             surfaceMat.SetVector("_elevationMinMax", new Vector4(elevationMinMax.Min, elevationMinMax.Max));
         }
+    }
+
+    public float CalculateRainfall(Vector3 point) {
+        point = point.normalized;
+        float rainfall = Mathf.Clamp01(planetGen.shapeBuilder.Evaluate(point, 1));
+        return rainfall;
+    }
+
+    public float CalculateHeat(Vector3 point, float elevationNormal) {
+        point = point.normalized;
+        float heat = Mathf.Clamp01(planetGen.shapeBuilder.Evaluate(point, 2, elevationNormal));
+        return heat;
     }
 
     public float BiomePoint(Vector3 pointOnUnit, PlanetGen planetGen) {
@@ -97,22 +109,17 @@ public class MainBuilder {
         surfaceMat.SetTexture("_texture", texture);
         surfaceMat.SetFloat("_seaLevel", settings.oceanSettings.seaLevel);
     }
-
-    public void SeaLevelPoints(TerrainInstance terrain) {
-        float seaLevel = planetGen.biomeBuilder.oceanSettings.seaLevel;
-        Vector3[] verts = terrain.mesh.vertices;
-        Debug.Log("Terrain is " + verts.Length + " verts long");
-        for (int i = 0; i < Mathf.Min(verts.Length, 10000); i++) {
-            if (terrain.mesh.uv[i].y < seaLevel + 0.01f && terrain.mesh.uv[i].y > seaLevel - 0.001f) {
-                seaLevelPoints.Add(verts[i]);
-                //Debug.Log("Adding point: " + i);
-            }
+    public void UVMapBiomes(Mesh mesh) {
+        Vector3[] verts = mesh.vertices;
+        Vector2[] uv3 = new Vector2[mesh.vertices.Length];
+        for (int i = 0; i < verts.Length; i++) {
+            Vector3 point = verts[i];
+            float rainAmount = CalculateRainfall(point);
+            float heatAmount = CalculateHeat(point, mesh.uv[i].y);
+            uv3[i].x = heatAmount;
+            uv3[i].y = rainAmount;
         }
-    }
-    public float MoistureMap(Vector3 point) {
-        float wetness = 0f;
-
-        return wetness;
+        mesh.uv4 = uv3;
     }
 
     public Texture2D CreateMap() {
@@ -169,7 +176,7 @@ public class MainBuilder {
 
                 Vector3 positionOnSphere = upAxis + (sideAxis * oneMinus);
                 Vector3 position = positionOnSphere.normalized;
-                float elevation = planetGen.shapeBuilder.Evaluate(position, 1);
+                float elevation = planetGen.shapeBuilder.Evaluate(position, 0);
                 Vector3 positionOnLand = position * (1 + elevation) * planetGen.size;
 
                 float preY = BiomePoint(position.normalized, planetGen);

@@ -33,12 +33,12 @@ public class NoiseFilter : ScriptableObject {
 
 
     /// <summary>
-    /// This only finds base elevation properly if you supply seaLevel as != 0, seaLevel is not currently implemented
+    /// Pseudo random noise generator, Mode 0 is rough, Mode 1 is rain, and Mode 2 is heat.
     /// </summary>
     /// <param name="point"></param>
-    /// <param name="seaLevel"></param>
-    /// <returns>The noise value at point, cubed, times strength</returns>
-    public float Evaluate(Vector3 point, float seaLevel) {
+    /// <param name="mode"></param>
+    /// <returns>The noise value at point, cubed, times strength (Mode 0)</returns>
+    public float Evaluate(Vector3 point, int mode) {
         float noiseValue = 0;
         float noiseDrift = 0;
         float frequency = baseRoughness;
@@ -46,7 +46,7 @@ public class NoiseFilter : ScriptableObject {
         float centerChange = driftOffset;
         Vector3 centerOff = new Vector3(center.x + centerChange, center.y + centerChange, center.z + centerChange);
 
-        if (seaLevel != 0) {
+        if (mode == 0) {
 
             for (int i = 0; i < octaves; i++) {
                 float v = noise.Evaluate(point * frequency + center);
@@ -59,21 +59,121 @@ public class NoiseFilter : ScriptableObject {
                 centerChange += driftOffset;
                 centerOff = new Vector3(center.x + centerChange, center.y + centerChange, center.z + centerChange);
             }
-        } else {
-            for (int i = 0; i < octaves; i++) {
-                float v = noise.Evaluate(point * frequency + center);
+            noiseValue = Mathf.Abs(noiseValue);
+            noiseDrift = Mathf.Abs(noiseDrift);
+            float defaultElevation = 1 - noiseValue;
+            float modifier = Mathf.Abs(altitudeCrusher * noiseDrift * defaultElevation);
+            float elevation = Mathf.Max(noiseDrift, 0.1f) * (1 - (noiseValue + modifier)) - 0.0001f;
+
+            return elevation * elevation * elevation * strength;
+        } else if (mode == 1) {
+            //Chunkier Noise
+            Vector3 off = new Vector3(3, 3, 3);
+            off += center;
+            float ratio = 1 - Mathf.Abs(point.normalized.y);
+            float blur = Mathf.Max(octaves/2 -1, 1);
+            float plus;
+            for (int i = 0; i < blur; i++) {
+                float v = noise.Evaluate(point * (frequency*2) + center);
+                plus = noise.Evaluate(point * (frequency) + off);
                 noiseValue += v * amplitude;
+                noiseDrift += plus * amplitude;
                 frequency *= roughness;
                 amplitude *= persistance;
             }
-            return 1 - Mathf.Abs(noiseValue);
+            float amount = Mathf.Clamp01(noiseValue);
+            return ratio * (1 - (amount * amount * .75f)) * (1 - (noiseDrift * noiseDrift * .25f));
+        } else {
+            Vector3 off = new Vector3(8, 8, 8);
+            off += center;
+            float ratio = 1 - Mathf.Abs(point.normalized.y);
+            float blur = Mathf.Max(octaves / 2 - 1, 1);
+            float plus;
+            for (int i = 0; i < blur; i++) {
+                float v = noise.Evaluate(point * (frequency) + center);
+                plus = noise.Evaluate(point * (frequency) + off);
+                noiseValue += v * amplitude;
+                noiseDrift += plus * amplitude;
+                frequency *= roughness;
+                amplitude *= persistance;
+            }
+            float amount = Mathf.Clamp01(noiseValue);
+            amount = ratio * (1 - (amount * amount * .25f)) * (1 + (noiseDrift * noiseDrift * .5f)) + (.1f * ratio);
+            return Mathf.Clamp01(amount);
         }
-        noiseValue = Mathf.Abs(noiseValue);
-        noiseDrift = Mathf.Abs(noiseDrift);
-        float defaultElevation = 1 - noiseValue;
-        float modifier = Mathf.Abs(altitudeCrusher * noiseDrift * defaultElevation);
-        float elevation = Mathf.Max(noiseDrift,0.1f) * (1 - (noiseValue + modifier)) - 0.0001f;
+        
+    }
 
-        return elevation * elevation * elevation * strength;
+    /// <summary>
+    /// Variant rule where higher altitudes are colder
+    /// </summary>
+    /// <param name="point"></param>
+    /// <param name="mode"></param>
+    /// <param name="altitude"></param>
+    /// <returns>The noise value at point, cubed, times strength (Mode 0)</returns>
+    public float Evaluate(Vector3 point, int mode, float altitude) {
+        float noiseValue = 0;
+        float noiseDrift = 0;
+        float frequency = baseRoughness;
+        float amplitude = 1;
+        float centerChange = driftOffset;
+        Vector3 centerOff = new Vector3(center.x + centerChange, center.y + centerChange, center.z + centerChange);
+
+        if (mode == 0) {
+
+            for (int i = 0; i < octaves; i++) {
+                float v = noise.Evaluate(point * frequency + center);
+                float drift = noise.Evaluate(point * (frequency / driftFactor) + centerOff);
+                noiseValue += v * amplitude;
+                noiseDrift += drift * amplitude;
+                frequency *= roughness;
+                amplitude *= persistance;
+
+                centerChange += driftOffset;
+                centerOff = new Vector3(center.x + centerChange, center.y + centerChange, center.z + centerChange);
+            }
+            noiseValue = Mathf.Abs(noiseValue);
+            noiseDrift = Mathf.Abs(noiseDrift);
+            float defaultElevation = 1 - noiseValue;
+            float modifier = Mathf.Abs(altitudeCrusher * noiseDrift * defaultElevation);
+            float elevation = Mathf.Max(noiseDrift, 0.1f) * (1 - (noiseValue + modifier)) - 0.0001f;
+
+            return elevation * elevation * elevation * strength;
+        } else if (mode == 1) {
+            //Chunkier Noise
+            Vector3 off = new Vector3(3, 3, 3);
+            off += center;
+            float ratio = 1 - Mathf.Abs(point.normalized.y);
+            float blur = Mathf.Max(octaves / 2 - 1, 1);
+            float plus;
+            for (int i = 0; i < blur; i++) {
+                float v = noise.Evaluate(point * (frequency * 2) + center);
+                plus = noise.Evaluate(point * (frequency) + off);
+                noiseValue += v * amplitude;
+                noiseDrift += plus * amplitude;
+                frequency *= roughness;
+                amplitude *= persistance;
+            }
+            float amount = Mathf.Clamp01(noiseValue);
+            return ratio * (1 - (amount * amount * .75f)) * (1 - (noiseDrift * noiseDrift * .25f));
+        } else {
+            Vector3 off = new Vector3(8, 8, 8);
+            off += center;
+            float ratio = 1 - Mathf.Abs(point.normalized.y);
+            float blur = Mathf.Max(octaves / 2 - 1, 1);
+            float plus;
+            for (int i = 0; i < blur; i++) {
+                float v = noise.Evaluate(point * (frequency) + center);
+                plus = noise.Evaluate(point * (frequency) + off);
+                noiseValue += v * amplitude;
+                noiseDrift += plus * amplitude;
+                frequency *= roughness;
+                amplitude *= persistance;
+            }
+            float amount = Mathf.Clamp01(noiseValue);
+            amount = ratio * (1 - (amount * amount * .25f)) * (1 + (noiseDrift * noiseDrift * .5f)) + (.1f * ratio) - (altitude * altitude * altitude * .1f);
+            return Mathf.Clamp01(amount);
+        }
+
     }
 }

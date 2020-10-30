@@ -81,7 +81,7 @@ public class ObjectPlacer : MonoBehaviour {
 
         //Vector3 testVector = Random.onUnitSphere;
         Vector3 point = ((axisA * 2 * (Random.value - .5f)) + (axisB * 2 * (Random.value - .5f)) + direction);
-        float placement = planetGen.shapeBuilder.Evaluate(point.normalized, 1);
+        float placement = planetGen.shapeBuilder.Evaluate(point.normalized, 0);
         float actualHeight = (1 + placement) * planetGen.size;
 
         Vector3 actualPlacement = transform.position + (point.normalized * actualHeight);

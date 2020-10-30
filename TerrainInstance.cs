@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class TerrainInstance {
 
-    public volatile Mesh mesh;
+    public Mesh mesh;
     public Vector3 localUP;
     Vector3 axisA;
     Vector3 axisB;
@@ -80,6 +80,7 @@ public class TerrainInstance {
         mesh.normals = normals.ToArray();
         // mesh.uv = uv;
         planetGen.UpdateUV(mesh);
+        planetGen.GenerateRain(mesh);
     }
 
     public void UpdateTree() {
@@ -97,7 +98,6 @@ public class TerrainInstance {
         int borderTriangleOffset = 0;
         parentTile.GetVisibleChildren();
         foreach (Tile child in visibleChildren) {
-            //this.RequestTile(OnTileDataReceived(child, tri), child);
             child.GetNeighborLOD();
             (Vector3[], int[], int[], Vector3[], Vector3[]) vertsAndTris = (new Vector3[0], new int[0], new int[0], new Vector3[0], new Vector3[0]);
 
@@ -139,6 +139,7 @@ public class TerrainInstance {
         mesh.triangles = triangles.ToArray();
         mesh.normals = normals.ToArray();
         planetGen.UpdateUV(mesh);
+        planetGen.GenerateRain(mesh);
     }
 
     public void OnTileDataReceived(Tile tile, int triangleOffset, int borderTriangleOffset) {
@@ -427,7 +428,7 @@ public class Tile {
         for (int i = 0; i < vertices.Length; i++) {
             Vector3 pointOnCube = transformMatrix.MultiplyPoint(Presets.quadTemplateVertices[quadIndex][i]);
             Vector3 pointOnUnitSphere = pointOnCube.normalized;
-            float elevation = planetGen.shapeBuilder.Evaluate(pointOnUnitSphere, 1);
+            float elevation = planetGen.shapeBuilder.Evaluate(pointOnUnitSphere, 0);
             vertices[i] = pointOnUnitSphere * (1 + elevation) * planetGen.size;
             mainBuilder.CalculateElevation(pointOnUnitSphere);
         }
@@ -438,7 +439,7 @@ public class Tile {
         for (int i = 0; i < borderVertices.Length; i++) {
             Vector3 pointOnCube = transformMatrix.MultiplyPoint(Presets.quadTemplateBorderVertices[quadIndex][i]);
             Vector3 pointOnUnitSphere = pointOnCube.normalized;
-            float elevation = planetGen.shapeBuilder.Evaluate(pointOnUnitSphere, 1);
+            float elevation = planetGen.shapeBuilder.Evaluate(pointOnUnitSphere, 0);
             borderVertices[i] = pointOnUnitSphere * (1 + elevation) * planetGen.size;
             mainBuilder.CalculateElevation(pointOnUnitSphere);
         }
