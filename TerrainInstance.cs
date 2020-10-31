@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class TerrainInstance {
 
-    public Mesh mesh;
+    public volatile Mesh mesh;
     public Vector3 localUP;
     Vector3 axisA;
     Vector3 axisB;
@@ -79,8 +79,7 @@ public class TerrainInstance {
         mesh.triangles = triangles.ToArray();
         mesh.normals = normals.ToArray();
         // mesh.uv = uv;
-        planetGen.UpdateUV(mesh);
-        planetGen.GenerateRain(mesh);
+        planetGen.BiomeUV(mesh);
     }
 
     public void UpdateTree() {
@@ -138,8 +137,6 @@ public class TerrainInstance {
         mesh.vertices = vertices.ToArray();
         mesh.triangles = triangles.ToArray();
         mesh.normals = normals.ToArray();
-        planetGen.UpdateUV(mesh);
-        planetGen.GenerateRain(mesh);
     }
 
     public void OnTileDataReceived(Tile tile, int triangleOffset, int borderTriangleOffset) {

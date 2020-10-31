@@ -237,7 +237,7 @@ public class PlanetGen : MonoBehaviour {
         float oldMin = mainBuilder.elevationMinMax.Min;
         for (int i = 0; i < points.Length; i++) {
             if (points[i] != null) {
-                uv[i].x = mainBuilder.BiomePoint(points[i].normalized, this);
+                //uv[i].x = mainBuilder.BiomePoint(points[i].normalized, this);
                 float newVal = ((points[i].magnitude - oldMin) / oldRange);
 
                 uv[i].y = newVal;
@@ -267,6 +267,7 @@ public class PlanetGen : MonoBehaviour {
     void UpdateMesh() {
         foreach (TerrainInstance face in terrainInstances) {
             face.UpdateTree();
+            BiomeUV(face.mesh);
         }
 
         if (lagSwitch) {
@@ -280,14 +281,14 @@ public class PlanetGen : MonoBehaviour {
         mainBuilder.UpdateColors();
     }
 
-    public void GenerateRain(Mesh mesh) {
+    public void BiomeUV(Mesh mesh) {
         mainBuilder.UVMapBiomes(mesh);
     }
 
     public void OnBiomeSettingsUpdated() {
         if (Application.isPlaying) {
             foreach (TerrainInstance face in terrainInstances) {
-                UpdateUV(face.mesh);
+               mainBuilder.UVMapBiomes(face.mesh);
             }
             mainBuilder.UpdateElevation();
             mainBuilder.UpdateColors();

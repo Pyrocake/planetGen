@@ -29,7 +29,7 @@ public class MainBuilder {
         mapWidth = planet.mapWidth;
 
         if (texture == null || texture.height != settings.biomeColorSettings.biomes.Length) {
-            Debug.Log("Texture initialization beginning");
+            //Debug.Log("Texture initialization beginning");
             texture = new Texture2D(textureResolution * 2, settings.biomeColorSettings.biomes.Length, TextureFormat.RGBA32, false);
         }
         biomeNoiseFilter = NoiseFactory.CreateNoiseFilter(settings.biomeColorSettings.legacyNoiseSettings);
@@ -53,20 +53,13 @@ public class MainBuilder {
         }
     }
 
-    public float CalculateRainfall(Vector3 point) {
-        point = point.normalized;
-        float rainfall = Mathf.Clamp01(planetGen.shapeBuilder.Evaluate(point, 1));
-        return rainfall;
-    }
+    //public float CalculateRainfall(Vector3 point, float normalAltitude) {
+    //    return Mathf.Clamp01(planetGen.shapeBuilder.Evaluate(point, 1, normalAltitude, settings.oceanSettings.seaLevel));
+    //}
 
-    public float CalculateHeat(Vector3 point) {
-        float oldRange = surfaceMat.GetVector("_elevationMinMax").y - surfaceMat.GetVector("_elevationMinMax").x;
-        float oldMin = surfaceMat.GetVector("_elevationMinMax").x;
-        float elevationNormal = (point.magnitude - oldMin) / oldRange;
-        point = point.normalized;
-        float heat = Mathf.Clamp01(planetGen.shapeBuilder.Evaluate(point, 2, elevationNormal));
-        return heat;
-    }
+    //public float CalculateHeat(Vector3 point, float normalAltitude) {
+    //    return Mathf.Clamp01(planetGen.shapeBuilder.Evaluate(point, 2, normalAltitude, settings.oceanSettings.seaLevel));
+    //}
 
     public float BiomePoint(Vector3 pointOnUnit, PlanetGen planetGen) {
         float heightPercent = (pointOnUnit.y + 1) / 2f;
@@ -82,7 +75,8 @@ public class MainBuilder {
             biomeIndex *= (1 - weight);
             biomeIndex += i * weight;
         }
-        return biomeIndex / Mathf.Max(1, numBiomes - 1);
+        //biomeIndex / Mathf.Max(1, numBiomes - 1)
+        return 0;
     }
 
     public void UpdateColors() {
@@ -113,17 +107,25 @@ public class MainBuilder {
         surfaceMat.SetFloat("_seaLevel", settings.oceanSettings.seaLevel);
     }
     public void UVMapBiomes(Mesh mesh) {
-        
+        float oldMax = surfaceMat.GetVector("_elevationMinMax").y;
+        float oldMin = surfaceMat.GetVector("_elevationMinMax").x;
         Vector3[] verts = mesh.vertices;
-        Vector2[] uv3 = new Vector2[mesh.vertices.Length];
+        Vector2[] biomeUV = new Vector2[mesh.vertices.Length];
         for (int i = 0; i < verts.Length; i++) {
             Vector3 point = verts[i];
-            float rainAmount = CalculateRainfall(point);
-            float heatAmount = CalculateHeat(point);
-            uv3[i].x = heatAmount;
-            uv3[i].y = rainAmount;
+            Vector3 normalPoint = point.normalized;
+            float normalAltitude = Mathf.InverseLerp(oldMin, oldMax, point.magnitude);
+            float rainAmount = Mathf.Clamp01(planetGen.shapeBuilder.Evaluate(normalPoint, 1, normalAltitude, settings.oceanSettings.seaLevel));
+            float heatAmount = Mathf.Clamp01(planetGen.shapeBuilder.Evaluate(normalPoint, 2, normalAltitude, settings.oceanSettings.seaLevel));
+
+            float otherPrimaryY = heatAmount;
+            float otherPrimaryX = Mathf.Lerp(.51f,1,rainAmount);
+
+            biomeUV[i].x = otherPrimaryX;
+            biomeUV[i].y = otherPrimaryY;
+
         }
-        mesh.uv4 = uv3;
+        mesh.uv = biomeUV;
     }
 
     public Texture2D CreateMap() {

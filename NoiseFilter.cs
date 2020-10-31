@@ -110,8 +110,9 @@ public class NoiseFilter : ScriptableObject {
     /// <param name="point"></param>
     /// <param name="mode"></param>
     /// <param name="altitude"></param>
+    /// <param name="seaLevel"></param>
     /// <returns>The noise value at point, cubed, times strength (Mode 0)</returns>
-    public float Evaluate(Vector3 point, int mode, float altitude) {
+    public float Evaluate(Vector3 point, int mode, float altitude, float seaLevel) {
         float noiseValue = 0;
         float noiseDrift = 0;
         float frequency = baseRoughness;
@@ -155,8 +156,13 @@ public class NoiseFilter : ScriptableObject {
                 amplitude *= persistance;
             }
             float amount = Mathf.Clamp01(noiseValue);
-            return ratio * (1 - (amount * amount * .75f)) * (1 - (noiseDrift * noiseDrift * .25f));
+            noiseDrift = Mathf.Clamp01(noiseDrift);
+            amount = ratio * (ratio * .8f) * (1 - (amount * amount * .75f)) * (1 - (noiseDrift * noiseDrift * .25f)) - (altitude * altitude * .4f);
+            return Mathf.Clamp01(amount);
         } else {
+            float sandFactor = Mathf.Abs(altitude - seaLevel);
+            sandFactor = 1 - (Mathf.Clamp01(sandFactor));
+            sandFactor = sandFactor * sandFactor * sandFactor;
             Vector3 off = new Vector3(8, 8, 8);
             off += center;
             float ratio = 1 - Mathf.Abs(point.normalized.y);
@@ -171,7 +177,7 @@ public class NoiseFilter : ScriptableObject {
                 amplitude *= persistance;
             }
             float amount = Mathf.Clamp01(noiseValue);
-            amount = ratio * (1 - (amount * amount * .25f)) * (1 + (noiseDrift * noiseDrift * .5f)) + (.1f * ratio) - (altitude * .5f);
+            amount = ratio * (1 - (amount * amount * .75f)) * (1 - (noiseDrift * noiseDrift * .25f)) + (.1f * sandFactor); // ratio * (ratio * .8f) * (1 - (amount * amount * .75f)) * (1 + (noiseDrift * noiseDrift * .25f)) + (1 * sandFactor) - (altitude * altitude * .25f);
             return Mathf.Clamp01(amount);
         }
 
