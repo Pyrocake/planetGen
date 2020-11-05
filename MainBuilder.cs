@@ -107,8 +107,8 @@ public class MainBuilder {
         surfaceMat.SetFloat("_seaLevel", settings.oceanSettings.seaLevel);
     }
     public void UVMapBiomes(Mesh mesh) {
-        float oldMax = surfaceMat.GetVector("_elevationMinMax").y;
-        float oldMin = surfaceMat.GetVector("_elevationMinMax").x;
+        float oldMax = elevationMinMax.Max;
+        float oldMin = elevationMinMax.Min;
         Vector3[] verts = mesh.vertices;
         Vector2[] biomeUV = new Vector2[mesh.vertices.Length];
         for (int i = 0; i < verts.Length; i++) {
@@ -121,8 +121,7 @@ public class MainBuilder {
             float otherPrimaryY = heatAmount;
             float otherPrimaryX = Mathf.Lerp(.51f,1,rainAmount);
 
-            biomeUV[i].x = otherPrimaryX;
-            biomeUV[i].y = otherPrimaryY;
+            biomeUV[i] = new Vector2(otherPrimaryX, otherPrimaryY);
 
         }
         mesh.uv = biomeUV;
