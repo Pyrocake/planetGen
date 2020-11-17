@@ -24,6 +24,8 @@ public class PlanetGen : MonoBehaviour {
     public float size = 2000;
 
     [Range(2, 32)] public int colliderSize = 4;
+    [Range(.1f, 3f)] public float colliderSpacing = 1f;
+    bool colliderMade = false;
 
     //[HideInInspector]
     public float[] detailLevelDistances = new float[] {
@@ -165,12 +167,13 @@ public class PlanetGen : MonoBehaviour {
     public void LocalCollider() {
         Mesh mesh = new Mesh();
 
-        if (!GameObject.Find("Collider")) {
+        if (!colliderMade) {
             GameObject colObj = new GameObject("Collider");
             colObj.transform.parent = transform;
             colObj.AddComponent<MeshFilter>();
             colObj.AddComponent<MeshCollider>();
             colObj.layer = 10;
+            colliderMade = true;
         }
 
         GameObject collideObj = GameObject.Find("Collider");
@@ -193,7 +196,7 @@ public class PlanetGen : MonoBehaviour {
         for (int x = 0; x < gridSize+1; x++) {
             for (int y = 0; y < gridSize+1; y++) {
                 //Pseudocode: The vert Vector at index = the relative x times x + the relative y times y + player position, minus the offset x and y to center it
-                Vector3 positionOnLand = (collideAxisA * x) + (collideAxisB * y) + fakeZero + (-collideAxisA * offset) + (-collideAxisB * offset);
+                Vector3 positionOnLand = (collideAxisA * x * colliderSpacing) + (collideAxisB * y * colliderSpacing) + fakeZero + (-collideAxisA * offset * colliderSpacing) + (-collideAxisB * offset * colliderSpacing);
                 positionOnLand = positionOnLand.normalized;
                 float elevation =  shapeBuilder.Evaluate(positionOnLand, 0);
                 positionOnLand = positionOnLand * (1 + elevation) * size;
@@ -318,5 +321,32 @@ public class PlanetGen : MonoBehaviour {
         Debug.Log("Map Creation Initializing");
         map = mainBuilder.CreateMap();
         return map;
+    }
+
+    public void RandomLocation() {
+        bool canLand = false;
+        float max = surfaceMat.GetVector("_elevationMinMax").y;
+        float min = surfaceMat.GetVector("_elevationMinMax").x;
+        float seaLevel = biomeBuilder.oceanSettings.seaLevel;
+        Vector3 location;
+
+        int attempt = 0;
+
+        while (!canLand) {
+            location = Random.onUnitSphere;
+            float elevation = shapeBuilder.Evaluate(location, 0);
+            Vector3 positionOnLand = location * (1 + elevation) * size;
+            attempt++;
+            if (Mathf.InverseLerp(min, max, positionOnLand.magnitude) > seaLevel) {
+                player.position = transform.TransformPoint((positionOnLand.magnitude + 10) * positionOnLand.normalized);
+                canLand = true;
+            }
+        }
+        if (attempt == 1) {
+            Debug.Log("1 Attempt made before land found.");
+        } else {
+            Debug.Log(attempt + " Attempts made before land found.");
+        }
+
     }
 }

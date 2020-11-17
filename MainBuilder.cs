@@ -128,7 +128,10 @@ public class MainBuilder {
     }
 
     public Texture2D CreateMap() {
-        float oldRange = surfaceMat.GetVector("_elevationMinMax").y - surfaceMat.GetVector("_elevationMinMax").x;
+        int waterCount = 0;
+        int landCount = 0;
+        float example = 0;
+        float oldRange = surfaceMat.GetVector("_elevationMinMax").y;
         float oldMin = surfaceMat.GetVector("_elevationMinMax").x;
 
         Texture2D newMap = new Texture2D(mapWidth, mapHeight,TextureFormat.RGBA32, false);
@@ -184,14 +187,21 @@ public class MainBuilder {
                 float elevation = planetGen.shapeBuilder.Evaluate(position, 0);
                 Vector3 positionOnLand = position * (1 + elevation) * planetGen.size;
 
-                float preY = BiomePoint(position.normalized, planetGen);
-                preY = Mathf.Lerp(0, settings.biomeColorSettings.biomes.Length, preY);
+                
 
-                float newVal = ((positionOnLand.magnitude - oldMin) / oldRange);
 
-                int yFinal = (int)preY;
 
-                if (newVal > seaLevel) {
+
+                float normalAltitude = Mathf.InverseLerp(oldMin, oldRange, positionOnLand.magnitude);
+                float rainAmount = Mathf.Clamp01(planetGen.shapeBuilder.Evaluate(position, 1, normalAltitude, settings.oceanSettings.seaLevel));
+                float heatAmount = Mathf.Clamp01(planetGen.shapeBuilder.Evaluate(position, 2, normalAltitude, settings.oceanSettings.seaLevel));
+
+                float newVal = rainAmount;
+                int yFinal = Mathf.RoundToInt(Mathf.Lerp(0, settings.biomeColorSettings.biomes.Length - 1, heatAmount));
+                float preY = Mathf.Lerp(0, settings.biomeColorSettings.biomes.Length - 1, heatAmount);
+                example = positionOnLand.magnitude;
+                if (normalAltitude > seaLevel) {
+                    landCount++;
                     //Initial Color Gradient
                     Gradient landGrad = settings.biomeColorSettings.biomes[yFinal].gradient;
                     Color landCol = landGrad.Evaluate(newVal);
@@ -213,7 +223,9 @@ public class MainBuilder {
                     }
                     colors[index] = landCol;
                 } else {
+                    waterCount++;
                     Gradient waterGrad = settings.oceanSettings.oceanColor;
+                    newVal = Mathf.InverseLerp(0, seaLevel, normalAltitude);
                     Color waterCol = waterGrad.Evaluate(newVal);
                     colors[index] = waterCol;
                 }
@@ -227,6 +239,8 @@ public class MainBuilder {
         newMap.wrapMode = TextureWrapMode.Clamp;
         newMap.filterMode = FilterMode.Bilinear;
         SaveTextureAsPNG(newMap, "C:\\Users\\ejhth\\Desktop\\Unity Components\\Testmap.png");
+        //Debug.Log("Land Pixels: " + landCount + ", Water Pixels: " + waterCount + " , Ratio is: " + ((float)landCount/(float)waterCount)*100);
+        //Debug.Log("Final Altitude: " + example);
         return newMap;
     }
 
